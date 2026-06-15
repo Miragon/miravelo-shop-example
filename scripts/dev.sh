@@ -16,6 +16,14 @@ if [[ ! -x "$PORTLESS" ]]; then
   exit 1
 fi
 
+# Ensure the frontend's dependencies exist — `npm run dev` (vite) fails with
+# "vite: command not found" otherwise. Only install when missing.
+FRONTEND_DIR="$REPO_ROOT/services/shop/shop-frontend"
+if [[ ! -x "$FRONTEND_DIR/node_modules/.bin/vite" ]]; then
+  echo "Installing frontend dependencies (one-time)..."
+  npm --prefix "$FRONTEND_DIR" install
+fi
+
 cat <<EOF
 Starting parallel dev for branch '${BRANCH_SLUG}':
   postgres   localhost:${POSTGRES_PORT}
@@ -35,7 +43,9 @@ docker compose -f "$REPO_ROOT/stack/docker-compose.yml" up -d --wait
 "$PORTLESS" alias "auth.${BRANCH_SLUG}" "${KEYCLOAK_PORT}"
 
 pids=()
-trap 'echo; echo "Shutting down..."; kill "${pids[@]}" 2>/dev/null || true' INT TERM
+# Conductor stops the Run script with SIGHUP (then SIGKILL), so trap it too —
+# otherwise the child Gradle/Vite processes are orphaned on stop.
+trap 'echo; echo "Shutting down..."; kill "${pids[@]}" 2>/dev/null || true' INT TERM HUP
 
 "$PORTLESS" "app.${BRANCH_SLUG}"       npm --prefix "$REPO_ROOT/services/shop/shop-frontend" run dev &
 pids+=($!)

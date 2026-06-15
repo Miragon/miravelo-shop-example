@@ -12,7 +12,7 @@ source "$SCRIPT_DIR/dev-env.sh"
 
 PORTLESS="$SCRIPT_DIR/node_modules/.bin/portless"
 
-docker compose -f "$REPO_ROOT/stack/docker-compose.yml" down
+docker compose -p "$COMPOSE_PROJECT_NAME" -f "$REPO_ROOT/stack/docker-compose.yml" down --remove-orphans
 
 if [[ -x "$PORTLESS" ]]; then
   "$PORTLESS" alias --remove "auth.${BRANCH_SLUG}" 2>/dev/null || true
