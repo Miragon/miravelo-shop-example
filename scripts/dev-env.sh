@@ -3,9 +3,14 @@
 # Sourced by dev.sh and dev-down.sh — derives branch-aware values from the
 # current git branch so that two checkouts running this script never collide.
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Honor a REPO_ROOT already set by the caller (dev.sh / dev-down.sh anchor it to
+# the script location under bash). Fall back to git so a standalone `source` of
+# this file still works — relying on ${BASH_SOURCE[0]} breaks when sourced from a
+# non-bash shell (e.g. zsh), yielding an empty BRANCH_SLUG and a wrong project.
+REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 BRANCH_SLUG="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD | tr '/_' '--' | tr '[:upper:]' '[:lower:]')"
+: "${BRANCH_SLUG:?BRANCH_SLUG is empty — not inside a git repository?}"
 HASH="$(echo -n "$BRANCH_SLUG" | cksum | cut -d ' ' -f1)"
 
 export BRANCH_SLUG
