@@ -148,15 +148,20 @@ Pro Branch-Checkout entstehen branch-spezifische URLs (`http://app.<slug>.localh
 Keycloak) auf hash-derivierten Ports. Zwei Worktrees auf unterschiedlichen
 Branches laufen so kollisionsfrei parallel. Details: `stack/README.md`.
 
-### Klassisch (single-clone, ohne portless)
+### Lokal single-origin (single-clone, ohne portless)
 
 ```bash
+cd stack && docker compose --profile solo up -d   # Postgres + Keycloak + nginx (:8080)
 SPRING_PROFILES_ACTIVE=dev ./gradlew :services:shop:shop-backend:bootRun
+npm --prefix services/shop/shop-frontend run dev  # Vite :5173
+# App: http://localhost:8080  (Login alice/test)
 ```
 
-Backend hängt sich an die festen dev-Ports (8081/8082/8083/8085). Postgres und
-Keycloak müssen separat aufgesetzt werden (oder Helm/Minikube, siehe
-`charts/README.md`).
+nginx auf `:8080` ist der einzige Entry-Point: `/` → Vite, `/api` → Backend
+(festen dev-Ports 8081/8082/8083/8085), `/auth` → Keycloak. Keycloak-Admin direkt
+unter `:8088/auth`. Das `--profile solo` ist nötig (sonst startet nginx nicht);
+`dev.sh` lässt es weg, damit nginx im portless-Modus aus bleibt. Details und
+Helm/Minikube-Alternative: `stack/README.md` bzw. `charts/README.md`.
 
 ## Testing Strategy
 

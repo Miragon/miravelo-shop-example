@@ -35,6 +35,13 @@ export DATABASE_SAMPLE_DATA_ENABLED=true
 export CORS_ALLOWED_ORIGINS="http://app${PORTLESS_BASE_SUFFIX}"
 export SWAGGER_API_ENABLED=true
 
+# Override the docker-compose.yml local-mode defaults with the branch-specific
+# portless URLs. portless routes each service on its own *.localhost hostname,
+# so Keycloak lives at the root path (not under /auth as in the nginx mode).
+export KEYCLOAK_HOSTNAME="http://auth${PORTLESS_BASE_SUFFIX}"
+export APP_ORIGIN="http://app${PORTLESS_BASE_SUFFIX}"
+export KC_RELATIVE_PATH=/
+
 # Disable the dev profile so that application-dev.yml's fixed port does NOT
 # override portless's ephemeral PORT assignment.
 unset SPRING_PROFILES_ACTIVE

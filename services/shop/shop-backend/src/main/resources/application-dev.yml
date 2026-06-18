@@ -1,7 +1,8 @@
 server:
   port: 8081
 
-ISSUER_URI: http://localhost:8080/realms/retail
+# Tokens are issued under the nginx /auth prefix (see stack/docker-compose.yml).
+ISSUER_URI: http://localhost:8080/auth/realms/retail
 
 DATABASE_URL: jdbc:postgresql://localhost:5432/test
 DATABASE_USER: test

@@ -63,13 +63,17 @@ export const initRuntimeConfig = async (): Promise<AppRuntimeConfig> => {
     return runtimeConfig;
 }
 
-// "auto" derives the Keycloak URL from the current frontend host by swapping
-// the leading "app." subdomain for "auth." — convention used by the
-// portless-based parallel-dev setup (see stack/README.md).
+// "auto" derives the Keycloak URL from the current frontend host (see
+// stack/README.md). Two dev layouts are supported:
+//   - portless parallel-dev: app.<slug>.localhost -> auth.<slug>.localhost (root)
+//   - local single-origin:   served behind nginx  -> same origin under /auth
 const resolveKeycloakUrl = (raw: string): string => {
     if (raw !== "auto") return raw;
-    const host = window.location.host.replace(/^app\./, "auth.");
-    return `${window.location.protocol}//${host}`;
+    const {protocol, host} = window.location;
+    if (host.startsWith("app.")) {
+        return `${protocol}//${host.replace(/^app\./, "auth.")}`;
+    }
+    return `${protocol}//${host}/auth`;
 }
 
 type RuntimeConfigGateProps = {

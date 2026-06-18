@@ -1,10 +1,15 @@
 # Stack
 
-Branch-isolierte Dev-Infrastruktur: pro Checkout läuft ein eigener
-Postgres + Keycloak. Routing zu lokal gestarteten Backend-/Frontend-Prozessen
-übernimmt [portless](http://github.com/vercel-labs/portless).
+Dev-Infrastruktur (Postgres + Keycloak) für zwei Setups aus **einer**
+`docker-compose.yml`:
 
-## Start
+- **Portless (parallel):** pro Checkout ein eigener Stack, Routing zu lokalen
+  Backend-/Frontend-Prozessen via [portless](http://github.com/vercel-labs/portless).
+  Mehrere Branches laufen kollisionsfrei parallel.
+- **Lokal (single-origin):** ein nginx auf `:8080` als einziger Entry-Point, der
+  Frontend, `/api` und Keycloak (`/auth`) unter einer Herkunft bündelt.
+
+## Start — Portless (parallel)
 
 ```bash
 npm --prefix scripts install        # einmalig pro Checkout: installiert portless
@@ -146,14 +151,43 @@ Korrektheit bei Auth + DB-Migrationen zählt (beides Kernthemen dieses Repos). D
 Ressourcen-Nachteil ließe sich später durch ein optionales C-Mode-Flag
 abfedern, ohne A als sicheren Default aufzugeben.
 
-## Klassischer Solo-Mode (ohne portless)
+## Lokaler Single-Origin-Mode (nginx, ohne portless)
 
-Wer nicht parallel arbeitet, kann weiterhin direkt mit dem dev-Profil starten:
+Wer nicht parallel arbeitet, startet die Infra inkl. **nginx** und die Services
+direkt — ohne `dev-env.sh`. Backend und Frontend laufen auf dem Host (z.B. über
+die IntelliJ-Run-Configs), nginx proxyt sie zusammen mit Keycloak unter `:8080`:
 
 ```bash
+cd stack && docker compose --profile solo up -d   # Postgres + Keycloak + nginx
 SPRING_PROFILES_ACTIVE=dev ./gradlew :services:shop:shop-backend:bootRun
+npm --prefix services/shop/shop-frontend run dev  # Vite auf :5173
+# danach: http://localhost:8080 öffnen
 ```
 
-Dann gelten die fixen Ports aus `application-dev.yml` (shop 8081, delivery 8082,
-warehouse 8083, mcp 8085) und der Vite-Proxy-Default zeigt auf `localhost:8081`.
-Keycloak und Postgres müssen dafür separat aufgesetzt werden.
+> Wichtig: **`--profile solo`** — ohne das Profil startet nginx nicht (so bleibt
+> es im portless-Modus aus). App öffnen unter **`http://localhost:8080`**, nicht
+> `:5173` und nicht direkt auf Keycloak.
+
+Routing (alles unter einer Herkunft `http://localhost:8080`):
+
+| Pfad                         | Ziel                                  |
+|------------------------------|---------------------------------------|
+| `/`                          | Frontend (Vite, Host `:5173`)         |
+| `/api/...`                   | shop-backend (Host `:8081`)           |
+| `/auth/realms/retail`        | Keycloak (Realm, Issuer)              |
+| `/auth/admin`                | Keycloak Admin (admin/admin)          |
+
+Keycloak ist zusätzlich direkt unter `http://localhost:8088/auth` erreichbar
+(eigener Host-Port, da nginx `:8080` belegt). Login als `alice`/`test` läuft über
+die App auf `:8080`.
+
+Ohne gesetzte Env-Vars greifen die Defaults der `docker-compose.yml` (Projekt
+`retail-local`, Postgres `5432`, Keycloak-Admin `8088`, nginx `8080`,
+`KC_HOSTNAME=http://localhost:8080/auth`, `KC_HTTP_RELATIVE_PATH=/auth`,
+Redirect/Origin `http://localhost:8080`) — passend zu `application-dev.yml`
+(`ISSUER_URI=http://localhost:8080/auth/realms/retail`, shop `:8081`).
+
+`dev.sh` überschreibt dieselben Variablen via `dev-env.sh` mit den
+branch-spezifischen portless-Werten (Keycloak unter Root-Pfad `/`, eigene
+Hostnamen statt `/auth`), und startet **ohne** `--profile solo`, sodass nginx
+dort nie läuft.
