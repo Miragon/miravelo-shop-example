@@ -1,2 +1,4 @@
-SERVER_PORT: 8083
+server:
+  port: 8083
+
 SWAGGER_API_ENABLED: true

@@ -1,0 +1,13 @@
+{
+  "name": "retail-dev-scripts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local dev tooling for the parallel-dev workflow (portless reverse proxy).",
+  "scripts": {
+    "dev": "./dev.sh",
+    "dev:down": "./dev-down.sh"
+  },
+  "dependencies": {
+    "portless": "0.14.0"
+  }
+}

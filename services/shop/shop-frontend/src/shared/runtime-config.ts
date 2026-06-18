@@ -55,12 +55,25 @@ export const initRuntimeConfig = async (): Promise<AppRuntimeConfig> => {
 
     const parsed = parseEnvFile(await response.text());
     runtimeConfig = {
-        keycloakUrl: requireConfigValue(parsed, "KEYCLOAK_URL"),
+        keycloakUrl: resolveKeycloakUrl(requireConfigValue(parsed, "KEYCLOAK_URL")),
         keycloakRealm: requireConfigValue(parsed, "KEYCLOAK_REALM"),
         keycloakClientId: requireConfigValue(parsed, "KEYCLOAK_CLIENT_ID"),
     };
 
     return runtimeConfig;
+}
+
+// "auto" derives the Keycloak URL from the current frontend host (see
+// stack/README.md). Two dev layouts are supported:
+//   - portless parallel-dev: app.<slug>.localhost -> auth.<slug>.localhost (root)
+//   - local single-origin:   served behind nginx  -> same origin under /auth
+const resolveKeycloakUrl = (raw: string): string => {
+    if (raw !== "auto") return raw;
+    const {protocol, host} = window.location;
+    if (host.startsWith("app.")) {
+        return `${protocol}//${host.replace(/^app\./, "auth.")}`;
+    }
+    return `${protocol}//${host}/auth`;
 }
 
 type RuntimeConfigGateProps = {

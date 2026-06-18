@@ -136,45 +136,34 @@ Each service implements its own article repository following the same domain mod
 
 ## Local Development Setup
 
-1. **Start infrastructure:**
+### Parallel-Dev (mehrere Checkouts, portless)
+
+Einmalig pro Checkout: `npm --prefix scripts install` (installiert portless lokal).
 
 ```bash
-cd charts
-minikube start
-helm upgrade --install postgres ./postgres
+npm --prefix scripts run dev        # Compose-Stack + alle Backends/Vite via portless
+npm --prefix scripts run dev:down   # Stack stoppen
 ```
 
-2. **Build and deploy services:**
+Pro Branch-Checkout entstehen branch-spezifische URLs (`http://app.<slug>.localhost:1355`,
+`http://shop.<slug>.localhost:1355`, ...) und ein eigener Compose-Stack (Postgres +
+Keycloak) auf hash-derivierten Ports. Zwei Worktrees auf unterschiedlichen
+Branches laufen so kollisionsfrei parallel. Details: `stack/README.md`.
 
-**Build images in minikube:**
+### Lokal single-origin (single-clone, ohne portless)
 
 ```bash
-minikube image build -t shop-backend:local -f services/shop/shop-backend/Dockerfile .
+cd stack && docker compose --profile solo up -d   # Postgres + Keycloak + nginx (:8080)
+SPRING_PROFILES_ACTIVE=dev ./gradlew :services:shop:shop-backend:bootRun
+npm --prefix services/shop/shop-frontend run dev  # Vite :5173
+# App: http://localhost:8080  (Login alice/test)
 ```
 
-```bash
-minikube image build -t delivery-backend:local -f services/delivery/delivery-backend/Dockerfile .
-```
-
-```bash
-minikube image build -t warehouse-backend:local -f services/warehouse/warehouse-backend/Dockerfile .
-```
-
-```bash
-minikube image build -t shop-frontend:local -f services/shop/shop-frontend/Dockerfile .
-```
-
-**Deploy with Helm:**
-
-```bash
-helm upgrade --install shop-backend ./shop-backend --values ./shop-backend/values.local.yaml
-```
-
-3. **Access services:**
-
-```bash
-minikube tunnel  # Enable LoadBalancer access
-```
+nginx auf `:8080` ist der einzige Entry-Point: `/` → Vite, `/api` → Backend
+(festen dev-Ports 8081/8082/8083/8085), `/auth` → Keycloak. Keycloak-Admin direkt
+unter `:8088/auth`. Das `--profile solo` ist nötig (sonst startet nginx nicht);
+`dev.sh` lässt es weg, damit nginx im portless-Modus aus bleibt. Details und
+Helm/Minikube-Alternative: `stack/README.md` bzw. `charts/README.md`.
 
 ## Testing Strategy
 
