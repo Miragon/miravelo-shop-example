@@ -12,8 +12,8 @@ source "$SCRIPT_DIR/dev-env.sh"
 
 PORTLESS="$SCRIPT_DIR/node_modules/.bin/portless"
 if [[ ! -x "$PORTLESS" ]]; then
-  echo "portless not installed. Run: npm --prefix scripts install" >&2
-  exit 1
+  echo "portless not installed — installing dev script dependencies (one-time)..."
+  npm --prefix "$SCRIPT_DIR" install
 fi
 
 # Ensure the frontend's dependencies exist — `npm run dev` (vite) fails with
