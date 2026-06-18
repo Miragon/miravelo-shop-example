@@ -1,5 +1,5 @@
 {
-  "name": "retail-dev-scripts",
+  "name": "miravelo-dev-scripts",
   "version": "0.0.0",
   "private": true,
   "description": "Local dev tooling for the parallel-dev workflow (portless reverse proxy).",

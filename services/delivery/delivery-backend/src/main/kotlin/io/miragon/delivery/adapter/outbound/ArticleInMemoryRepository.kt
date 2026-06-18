@@ -18,28 +18,28 @@ class ArticleInMemoryRepository : ArticleRepository {
 
     private fun testArticles() = listOf(
         Article(
-            id = ArticleId(UUID.fromString("246b5980-ff9a-4cf5-803b-cd2d50fe60da")),
-            name = ArticleName("Logitech MX Master 3S"),
-            description = ArticleDescription("Advanced wireless mouse with ultra-fast scrolling and ergonomic design."),
-            price = Price(99.99),
+            id = ArticleId(UUID.fromString("788b6181-c18b-4fff-a13a-43b9950c798d")),
+            name = ArticleName("Miravelo Gravel One"),
+            description = ArticleDescription("Aluminium gravel bike built for long weekends in the woods and the occasional questionable shortcut."),
+            price = Price(1899.00),
         ),
         Article(
-            id = ArticleId(UUID.fromString("f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d")),
-            name = ArticleName("Samsung 980 PRO 1TB SSD"),
-            description = ArticleDescription("High-performance NVMe SSD with PCIe 4.0 for gaming and heavy workloads."),
-            price = Price(129.99),
+            id = ArticleId(UUID.fromString("49597d42-36f0-4f05-a9eb-d9bf6c562d24")),
+            name = ArticleName("Miravelo Gravel Pro Carbon"),
+            description = ArticleDescription("Lightweight carbon gravel bike for everyone who just wants to \"quickly\" ride 120 km."),
+            price = Price(4299.00),
         ),
         Article(
-            id = ArticleId(UUID.fromString("d7e9a1e0-1234-4c5b-9876-abcdef123456")),
-            name = ArticleName("Keychron K2 Mechanical Keyboard"),
-            description = ArticleDescription("Compact wireless mechanical keyboard with RGB lighting and hot-swappable keys."),
-            price = Price(89.00),
+            id = ArticleId(UUID.fromString("58191458-4b10-401c-b85b-beba3c8d9667")),
+            name = ArticleName("Miravelo Roadster Endurance"),
+            description = ArticleDescription("Comfort-focused road bike for relaxed after-work loops that turn into epics."),
+            price = Price(2499.00),
         ),
         Article(
-            id = ArticleId(UUID.fromString("0f5e45d3-aaa3-4cde-a1b2-9e8f0d1a2b3c")),
-            name = ArticleName("Sony WH-1000XM5 Headphones"),
-            description = ArticleDescription("Noise-canceling over-ear headphones with up to 30 hours of battery life."),
-            price = Price(349.99),
+            id = ArticleId(UUID.fromString("b3145287-0993-42ce-990e-8292b5b2cbcf")),
+            name = ArticleName("Miravelo Aero RS"),
+            description = ArticleDescription("Aero race bike for chasing Strava segments nobody else cares about."),
+            price = Price(5999.00),
         )
     )
 }

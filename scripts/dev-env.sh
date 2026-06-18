@@ -16,13 +16,13 @@ HASH="$(echo -n "$BRANCH_SLUG" | cksum | cut -d ' ' -f1)"
 export BRANCH_SLUG
 export POSTGRES_PORT=$((15000 + HASH % 1000))
 export KEYCLOAK_PORT=$((16000 + HASH % 1000))
-export COMPOSE_PROJECT_NAME="retail-${BRANCH_SLUG}"
+export COMPOSE_PROJECT_NAME="miravelo-${BRANCH_SLUG}"
 
 export PORTLESS_HTTPS=0
 export PORTLESS_PORT=1355
 PORTLESS_BASE_SUFFIX=".${BRANCH_SLUG}.localhost:${PORTLESS_PORT}"
 
-export ISSUER_URI="http://auth${PORTLESS_BASE_SUFFIX}/realms/retail"
+export ISSUER_URI="http://auth${PORTLESS_BASE_SUFFIX}/realms/miravelo"
 export SHOP_BACKEND_URL="http://shop${PORTLESS_BASE_SUFFIX}"
 
 export DATABASE_URL="jdbc:postgresql://localhost:${POSTGRES_PORT}/test"

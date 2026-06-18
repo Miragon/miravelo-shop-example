@@ -6,6 +6,6 @@ metadata:
   labels:
     {{- include "keycloak.labels" . | nindent 4 }}
 data:
-  retail-realm.yaml: |
-{{ .Files.Get "files/retail-realm.yaml" | indent 4 }}
+  miravelo-realm.yaml: |
+{{ .Files.Get "files/miravelo-realm.yaml" | indent 4 }}
 {{- end }}

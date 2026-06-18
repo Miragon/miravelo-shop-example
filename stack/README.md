@@ -18,7 +18,7 @@ npm --prefix scripts run dev:down   # Compose stoppen (portless-Prozesse via Ctr
 ```
 
 `dev:down` stoppt den Stack des aktuellen Branches und räumt zusätzlich
-verwaiste `retail-*`-Stacks auf, deren Compose-Datei nicht mehr existiert (z.B.
+verwaiste `miravelo-*`-Stacks auf, deren Compose-Datei nicht mehr existiert (z.B.
 gelöschte Worktrees). Stacks lebender Worktrees (Compose-Datei noch vorhanden)
 bleiben laufen, damit Parallel-Dev funktioniert.
 
@@ -79,7 +79,7 @@ Branch-Isolation entsteht durch zwei zusammenwirkende Mechanismen:
   `CORS_ALLOWED_ORIGINS` und Keycloak-`redirect_uris` (von `keycloak-config-cli`
   pro Slug gesetzt).
 
-## Testuser (Realm: retail)
+## Testuser (Realm: miravelo)
 
 | User       | Passwort | Rollen          |
 |------------|----------|-----------------|
@@ -174,7 +174,7 @@ Routing (alles unter einer Herkunft `http://localhost:8080`):
 |------------------------------|---------------------------------------|
 | `/`                          | Frontend (Vite, Host `:5173`)         |
 | `/api/...`                   | shop-backend (Host `:8081`)           |
-| `/auth/realms/retail`        | Keycloak (Realm, Issuer)              |
+| `/auth/realms/miravelo`        | Keycloak (Realm, Issuer)              |
 | `/auth/admin`                | Keycloak Admin (admin/admin)          |
 
 Keycloak ist zusätzlich direkt unter `http://localhost:8088/auth` erreichbar
@@ -182,10 +182,10 @@ Keycloak ist zusätzlich direkt unter `http://localhost:8088/auth` erreichbar
 die App auf `:8080`.
 
 Ohne gesetzte Env-Vars greifen die Defaults der `docker-compose.yml` (Projekt
-`retail-local`, Postgres `5432`, Keycloak-Admin `8088`, nginx `8080`,
+`miravelo-local`, Postgres `5432`, Keycloak-Admin `8088`, nginx `8080`,
 `KC_HOSTNAME=http://localhost:8080/auth`, `KC_HTTP_RELATIVE_PATH=/auth`,
 Redirect/Origin `http://localhost:8080`) — passend zu `application-dev.yml`
-(`ISSUER_URI=http://localhost:8080/auth/realms/retail`, shop `:8081`).
+(`ISSUER_URI=http://localhost:8080/auth/realms/miravelo`, shop `:8081`).
 
 `dev.sh` überschreibt dieselben Variablen via `dev-env.sh` mit den
 branch-spezifischen portless-Werten (Keycloak unter Root-Pfad `/`, eigene

@@ -1,13 +1,13 @@
-realm: retail
+realm: miravelo
 enabled: true
-displayName: Retail Example
+displayName: Miravelo
 
 roles:
   realm:
     - name: CUSTOMER
-      description: Standard shop customer
+      description: Standard Miravelo customer
     - name: ADMIN
-      description: Shop administrator
+      description: Miravelo administrator
 
 clients:
   - clientId: shop-frontend

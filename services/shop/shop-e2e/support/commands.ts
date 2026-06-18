@@ -13,7 +13,7 @@ export const DATA_TESTID = {
         PASSWORD: "input#password",
         SUBMIT: "#kc-login"
     },
-    // Cart-IconButton-f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d
+    // Cart-IconButton-788b6181-c18b-4fff-a13a-43b9950c798d
     SHOP_MENU: {
         ORDERS: "button[title='Orders']",
         CART: "button[title='Cart']",
@@ -25,25 +25,25 @@ export const DATA_TESTID = {
             return `ArticleCard-${id}-Button`
         },
         ITEMS: {
-            SAMSUNG: {
-                ID: "f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d",
-                DESCRIPTION: "Samsung 980 PRO 1TB SSD"
+            GRAVEL_ONE: {
+                ID: "788b6181-c18b-4fff-a13a-43b9950c798d",
+                DESCRIPTION: "Miravelo Gravel One"
             },
-            KEYCHRON: {
-                ID: "d7e9a1e0-1234-4c5b-9876-abcdef123456",
-                DESCRIPTION: "Keychron K2 Mechanical Keyboard"
+            TIRES: {
+                ID: "ca79f826-8b2e-4d52-88c8-31edba8aace4",
+                DESCRIPTION: "GravelKing Tubeless Tires"
             },
-            SONY_HEADPHONES: {
-                ID: "0f5e45d3-aaa3-4cde-a1b2-9e8f0d1a2b3c",
-                DESCRIPTION: "Sony WH-1000XM5 Headphones"
+            JERSEY: {
+                ID: "c2e55163-bdf8-4a4d-bdab-8168fc68fd2e",
+                DESCRIPTION: "Merino Cycling Jersey"
             },
-            LG: {
-                ID: "d4e5f6a7-b8c9-7d8e-2f3a-1b2c3d4e5f6a",
-                DESCRIPTION: "LG 34WN80C-B UltraWide Monitor"
+            WHEELSET: {
+                ID: "90b83b4a-1a31-461f-b815-7363327fb0c7",
+                DESCRIPTION: "Miravelo Carbon Gravel Wheelset"
             },
-            DELL: {
-                ID: "a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d",
-                DESCRIPTION: "Dell XPS 15 Laptop"
+            HELMET: {
+                ID: "adc88073-ac0e-409f-b4eb-f6a345ec3b09",
+                DESCRIPTION: "Aero Road Helmet"
             }
         }
     },

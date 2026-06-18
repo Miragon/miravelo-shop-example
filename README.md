@@ -1,6 +1,12 @@
-# 🛍️ Retail DDD Example
+# 🚲 Miravelo — DDD Bike Shop Example
 
 > *A showcase of how multiple teams can collaborate in a monorepo using Domain-Driven Design*
+
+**Miravelo** is our standard scenario for trainings, workshops and demos — a (fictional) lifestyle
+bike shop selling gravel bikes for weekends in the woods, road bikes for after-work loops, and
+accessories nobody strictly needs but everybody *feels*. It gives every example a consistent domain
+narrative ("we're building features for a shop") that anyone understands instantly — so the focus
+stays on the architecture, not the domain.
 
 Welcome to our **Domain-Driven Design** showcase!
 This isn't just another "Hello World" - it's a **multi-team monorepo** demonstrating how different bounded contexts can
@@ -23,14 +29,14 @@ principles**, **bounded contexts**, and **Hexagonal Architecture**.
 Think of it as a **digital shopping mall** where each team owns their "store" (bounded context) but shares the
 infrastructure, while maintaining clear ownership and autonomy.
 
-## 🏬 The Domain: An online shop
+## 🏬 The Domain: The Miravelo bike shop
 
-The domain is a **retail e-commerce platform** with multiple bounded contexts,
+The domain is **Miravelo**, a bike e-commerce platform with multiple bounded contexts,
 each representing a different aspect of the business:
 
-- **🛒 Shop Service**: The main attraction - handles articles, orders, and all that e-commerce jazz
-- **🚚 Delivery Service**: Knows where your packages are (probably stuck in traffic)
-- **📦 Warehouse Service**: Keeps track of inventory (yes, we're out of toilet paper again)
+- **🛒 Shop Service**: The main attraction - handles articles (bikes & gear), orders, and all that e-commerce jazz
+- **🚚 Delivery Service**: Knows where your new gravel bike is (probably stuck in traffic)
+- **📦 Warehouse Service**: Keeps track of inventory (yes, we're out of that one popular saddle again)
 
 ## 🎪 Tech Circus
 
@@ -80,7 +86,7 @@ Everything is reachable through the nginx reverse proxy on a single port:
 | `http://localhost:8080/auth/` | Keycloak |
 | `http://localhost:8080/auth/admin` | Keycloak Admin (`admin` / `admin`) |
 
-Log in with one of the bundled test users (realm `retail`, password `test`): `alice`, `bob`
+Log in with one of the bundled test users (realm `miravelo`, password `test`): `alice`, `bob`
 (both `CUSTOMER`), or `shopkeeper` (`CUSTOMER` + `ADMIN`). See [stack/README.md](stack/README.md)
 for details.
 
@@ -99,7 +105,7 @@ You can also run the backends/frontend directly while keeping the infrastructure
    ```
 
 3. **Start the services**
-   - **Backends**: run the "retail application" compound config in IntelliJ, or
+   - **Backends**: run the "miravelo-application" compound config in IntelliJ, or
      `./gradlew :services:shop:shop-backend:bootRun` (and likewise for delivery/warehouse).
      The dev profile already points `ISSUER_URI` at the local Keycloak realm
      (see [application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml)).
@@ -133,7 +139,7 @@ helm upgrade --install shop-backend ./shop-backend --values ./shop-backend/value
 
 **Keycloak** runs in-cluster too, as its own chart
 ([charts/infrastructure/keycloak](charts/infrastructure/keycloak)) behind Traefik under `/auth`,
-with the `retail` realm imported by `keycloak-config-cli`. The services are wired to it via the
+with the `miravelo` realm imported by `keycloak-config-cli`. The services are wired to it via the
 `KEYCLOAK_*` ([charts/shop-frontend/values.local.yaml](charts/shop-frontend/values.local.yaml)) and
 `security.issuer-uri` / `security.jwk-set-uri`
 ([charts/shop-backend/values.local.yaml](charts/shop-backend/values.local.yaml)) values. The backend
@@ -145,8 +151,8 @@ in-cluster `jwk-set-uri` (since the browser URL isn't reachable from inside a po
 
 Authentication is handled by a **self-hosted Keycloak** that ships with the Docker Compose stack —
 no external accounts, no sign-up, no secrets to copy around. On startup,
-[keycloak-config-cli](https://github.com/adorsys/keycloak-config-cli) imports the `retail` realm
-from [stack/keycloak/retail-realm.yaml](stack/keycloak/retail-realm.yaml), which defines:
+[keycloak-config-cli](https://github.com/adorsys/keycloak-config-cli) imports the `miravelo` realm
+from [stack/keycloak/miravelo-realm.yaml](stack/keycloak/miravelo-realm.yaml), which defines:
 
 - A public SPA client `shop-frontend`
 - Realm roles `CUSTOMER` and `ADMIN`
@@ -164,7 +170,7 @@ How the pieces are wired:
   [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env)
   (`KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`).
 - **Backend** validates JWTs against the realm via `ISSUER_URI`
-  (`http://localhost:8080/auth/realms/retail`), configured in
+  (`http://localhost:8080/auth/realms/miravelo`), configured in
   [application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml).
 
 To inspect or tweak realm settings, open the admin console at

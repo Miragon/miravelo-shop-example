@@ -5,7 +5,7 @@ WORKDIR /app
 COPY gradlew .
 COPY gradle gradle
 COPY gradle.properties .
-RUN printf 'dependencyResolutionManagement {\n    @Suppress("UnstableApiUsage")\n    repositories { mavenCentral() }\n}\nrootProject.name = "retail-ddd-example"\ninclude("services:shop:shop-backend")\n' > settings.gradle.kts
+RUN printf 'dependencyResolutionManagement {\n    @Suppress("UnstableApiUsage")\n    repositories { mavenCentral() }\n}\nrootProject.name = "miravelo"\ninclude("services:shop:shop-backend")\n' > settings.gradle.kts
 
 COPY services/shop/shop-backend/build.gradle.kts services/shop/shop-backend/
 

@@ -1,7 +1,7 @@
 # 🤖 Claude Meets Our Shop: MCP Server Integration Guide
 
 Welcome to the wild world of **Model Context Protocol (MCP)** integration!
-This guide will show you how to connect MCP clients to our "Nerd Alert Shop" MCP server.
+This guide will show you how to connect MCP clients to our "Miravelo" bike shop MCP server.
 
 ## 🤔 What is MCP?
 
@@ -20,14 +20,14 @@ services in a standardized way.
 
 Our shop backend doesn't just serve REST APIs -
 it's also a fancy **MCP server** that can chat with any MCP-compatible client!
-Think of it as giving AI assistants a direct hotline to our tech shop inventory.
+Think of it as giving AI assistants a direct hotline to the Miravelo bike shop inventory.
 
 **What MCP clients can do with our server:**
 
 - 🔍 Browse all available articles (no authentication required)
 - 📱 Get detailed info about specific products
-- 💬 Help you find the perfect tech gear
-- 🛒 Basically become your personal tech shopping assistant for browsing
+- 💬 Help you find the perfect bike or cycling gear
+- 🛒 Basically become your personal bike shopping assistant for browsing
 
 **Note:** The MCP client provides read-only access to the product catalog. Shopping cart and order operations require user authentication through the web frontend.
 
@@ -70,9 +70,9 @@ Open your `claude_desktop_config.json` file and add this configuration:
 ```json
 {
   "mcpServers": {
-    "nerd-alert-shop": {
-      "name": "Nerd Alert Shop",
-      "description": "A tech shop called nerd alert where you can buy all kinds of tech stuff.",
+    "miravelo-shop": {
+      "name": "Miravelo",
+      "description": "A bike shop called Miravelo where you can browse gravel bikes, road bikes and cycling gear.",
       "command": "java",
       "args": [
         "-Dspring.ai.mcp.server.stdio=true",
@@ -87,7 +87,7 @@ Open your `claude_desktop_config.json` file and add this configuration:
 ### Step 4: Restart Claude Desktop
 
 Close and reopen Claude Desktop.
-You should now see the "Nerd Alert Shop" MCP server available in your Claude interface.
+You should now see the "Miravelo" MCP server available in your Claude interface.
 
 ## 🎪 How It Works Under the Hood
 
@@ -108,8 +108,8 @@ These tools are implemented in `ArticleTools.kt` and make REST calls to `/api/ar
 
 Once configured, you can test it by asking Claude things like:
 
-- *"What tech products are available in the Nerd Alert Shop?"*
-- *"Can you find me a laptop in the shop?"*
+- *"What bikes are available in the Miravelo shop?"*
+- *"Can you find me a gravel bike in the shop?"*
 - *"Show me the details for article XYZ"*
 
 Claude will use the MCP server to fetch real data from our shop backend and provide you with up-to-date information!

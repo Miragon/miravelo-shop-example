@@ -128,6 +128,8 @@ src/main/kotlin/
 
 ## Domain Model
 
+The project's domain narrative is **Miravelo**, a (fictional) lifestyle bike shop (gravel bikes, road bikes and cycling gear). It is the standard scenario used across trainings and demos; keep new sample content, copy and seed data within this bike-shop framing.
+
 The core domain revolves around Articles with shared value objects:
 
 - `ArticleId`, `ArticleName`, `ArticleDescription`, `Price`, `ImageUrl`

@@ -54,7 +54,7 @@ export function ArticleOverviewPage() {
                         No articles available
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                        Check back later for new products!
+                        Check back later for new bikes and gear!
                     </Typography>
                 </Box>
             </If>
