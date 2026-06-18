@@ -10,7 +10,6 @@ ingress:
           pathType: Prefix
 
 env:
-  SHOP_BACKEND_URL: "http://localhost:8080"
-  OAUTH_DOMAIN: "retail-ddd-example.eu.auth0.com"
-  OAUTH_CLIENT_ID: "22pHgiuTCCLFKHK7SMbWkCzohwar8knS"
-  OAUTH_AUDIENCE: ""
+  KEYCLOAK_URL: "http://localhost:8080/auth"
+  KEYCLOAK_REALM: "retail"
+  KEYCLOAK_CLIENT_ID: "shop-frontend"

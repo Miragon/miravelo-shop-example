@@ -8,10 +8,10 @@ declare global {
 }
 
 export const DATA_TESTID = {
-    AUTH0: {
+    KEYCLOAK: {
         USERNAME: "input#username",
         PASSWORD: "input#password",
-        SUBMIT: "button[data-action-button-primary=true]:contains(Continue)"
+        SUBMIT: "#kc-login"
     },
     // Cart-IconButton-f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d
     SHOP_MENU: {
@@ -81,73 +81,51 @@ export const PAGE = {
     CART: "/cart"
 } as const;
 
-const TOKEN = `https://${Cypress.expose("auth0Domain")}/oauth/token`;
+// keycloak-js stores the access token here once the OIDC login flow completes.
+const TOKEN_STORAGE_KEY = "dddToken";
+
+// Retries until keycloak-js has persisted the access token in localStorage.
+const expectAuthenticated = (): void => {
+    cy.window({timeout: 30000}).should(win => {
+        expect(win.localStorage.getItem(TOKEN_STORAGE_KEY)).to.be.a("string");
+    });
+};
 
 Cypress.Commands.add("login", function (username, password) {
     Cypress.log({
-        displayName: "AUTH0 LOGIN",
+        displayName: "KEYCLOAK LOGIN",
         message: [`🔐 Session | ${Cypress.spec.name}`]
     });
-    // NOTE: the session ID has to be unique for each user login to avoid conflicts
-    cy.env(["auth0Username", "auth0Password", "auth0ClientId"]).then(credentials => {
-        const {auth0Username, auth0Password, auth0ClientId} = credentials;
-        if (username === undefined || password === undefined) {
-            username = auth0Username;
-            password = auth0Password;
-        }
+    // `env` values are read via cy.env() (project runs with allowCypressEnv: false).
+    cy.env(["keycloakUsername", "keycloakPassword"]).then(credentials => {
+        const {keycloakUsername, keycloakPassword} = credentials;
+        const user = username ?? keycloakUsername;
+        const pass = password ?? keycloakPassword;
+        // NOTE: the session ID is unique per test. Sharing a session across the spec
+        // breaks once a test logs out (it invalidates the Keycloak server session),
+        // so each test gets its own clean login.
         cy.session(
-            `${username}-${Cypress.spec.name}`,
+            `${user}-${Cypress.spec.name}-${Cypress.currentTest.title}`,
             () => {
-                const {AUTH0} = DATA_TESTID;
-                cy.intercept("POST", TOKEN).as("token");
+                const {KEYCLOAK} = DATA_TESTID;
                 cy.clearAllSessionStorage();
                 cy.clearAllCookies();
                 cy.clearAllLocalStorage();
-                // App landing page redirects to Auth0.
-                cy.visit("/")
-                cy.get(AUTH0.USERNAME).should("be.visible");
-                // Login to Auth0 and receive the token.
-                cy.origin(
-                    Cypress.expose("auth0Domain"),
-                    {args: {username, password, AUTH0}},
-                    ({username, password, AUTH0}) => {
-                        cy.get(AUTH0.SUBMIT).as("submit");
-                        cy.get("@submit").should("be.visible");
-                        cy.get(AUTH0.USERNAME).as("un");
-                        cy.get("@un").clear();
-                        cy.get("@un")
-                            .should("have.value", "");
-                        cy.get("@un")
-                            .type(username, {delay: 50});
-                        cy.get("@un")
-                            .should("have.value", username);
-                        cy.get(AUTH0.PASSWORD).as("pw");
-                        cy.get("@pw").clear();
-                        cy.get("@pw")
-                            .should("have.value", "");
-                        cy.get("@pw")
-                            .type(password, {delay: 50, log: false});
-                        cy.get("@pw")
-                            .should("have.value", password);
-                        cy.get("@submit").click();
-                        // wait for the token, then get redirected
-                        cy.wait("@token");
-                    }
-                );
-            }, // session created
+                // The app boots with keycloak-js `login-required`, so visiting it
+                // immediately redirects to the Keycloak login form. Keycloak is served
+                // under the same origin (behind the nginx/Traefik reverse proxy on :8080),
+                // so no cy.origin() boundary is required.
+                cy.visit("/");
+                cy.get(KEYCLOAK.USERNAME).should("be.visible").clear().type(user);
+                cy.get(KEYCLOAK.PASSWORD).clear().type(pass, {log: false});
+                cy.get(KEYCLOAK.SUBMIT).click();
+                // After a successful login Keycloak redirects back and keycloak-js
+                // persists the access token.
+                expectAuthenticated();
+            },
             {
-                validate: () => {
-                    cy.getCookie(`auth0.${auth0ClientId}.is.authenticated`)
-                        .then($cookie => {
-                            expect($cookie.value).eq("true");
-                        });
-                    cy.getCookie(`_legacy_auth0.${auth0ClientId}.is.authenticated`)
-                        .then($cookie => {
-                            expect($cookie.value).eq("true");
-                        });
-                },
+                validate: expectAuthenticated,
                 cacheAcrossSpecs: false
             });
-    });// blank page
-    // cy.get("[data-cy='cypress-logo']").should("be.visible"); // wait for the blank page
+    });
 });

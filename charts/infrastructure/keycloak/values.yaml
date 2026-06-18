@@ -1,0 +1,44 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/keycloak/keycloak
+  tag: "26.3"
+  pullPolicy: IfNotPresent
+
+# Bootstrap admin (Keycloak admin console). Demo credentials only.
+admin:
+  username: admin
+  password: admin
+
+http:
+  # Keycloak is served under this relative path (matches the docker-compose stack).
+  relativePath: /auth
+
+# Browser-facing base URL of Keycloak (through Traefik on :8080). This becomes the
+# token `iss` value, so the backend's issuer-uri must match it.
+hostname: "http://localhost:8080/auth"
+
+service:
+  port: 8080
+  managementPort: 9000
+
+# Traefik IngressRoute exposing Keycloak under {host}{pathPrefix}.
+ingress:
+  enabled: true
+  entryPoint: web
+  host: localhost
+  pathPrefix: /auth
+
+# Realm import via keycloak-config-cli (runs as a post-install/upgrade Helm hook).
+realm:
+  import:
+    enabled: true
+    image:
+      repository: adorsys/keycloak-config-cli
+      tag: "latest-26"
+    # Variable substitution values for files/retail-realm.yaml.
+    redirectUris: '["http://localhost:8080/*"]'
+    webOrigins: '["http://localhost:8080"]'
+    testUserPassword: test
+
+resources: {}

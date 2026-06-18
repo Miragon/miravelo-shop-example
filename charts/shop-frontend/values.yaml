@@ -38,7 +38,7 @@ readinessProbe:
   failureThreshold: 3
 
 env:
-  SHOP_BACKEND_URL: ""
-  OAUTH_DOMAIN: ""
-  OAUTH_CLIENT_ID: ""
-  OAUTH_AUDIENCE: ""
+  # Browser-facing Keycloak settings, served at runtime via app.env.
+  KEYCLOAK_URL: ""
+  KEYCLOAK_REALM: ""
+  KEYCLOAK_CLIENT_ID: ""

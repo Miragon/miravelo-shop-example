@@ -116,11 +116,13 @@ src/main/kotlin/
 - Vite build tool
 - Material-UI components
 - TanStack Query for state management
-- Auth0 for authentication
+- Keycloak (OAuth2/OIDC) for authentication
 
 **Infrastructure:**
 
 - Docker containers
+- Docker Compose stack (`stack/`) for local development (Postgres, Keycloak, nginx; optional backend/frontend)
+- Keycloak (self-hosted OAuth2/OIDC, realm config in `stack/keycloak/`)
 - Kubernetes/Helm for deployment
 - Minikube for local development
 
