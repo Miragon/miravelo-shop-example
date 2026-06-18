@@ -29,41 +29,41 @@
 ### Test #unn - Add Article to Cart
 **Action:** User adds a single article to the shopping cart
 **Steps:**
-1. Click "Add to Cart" button for Samsung 980 PRO 1TB SSD
+1. Click "Add to Cart" button for Miravelo Gravel One
 2. Click cart icon in navigation menu
 3. Cart page displays
 
 **Verification:**
-- Cart list contains "Samsung 980 PRO 1TB SSD"
+- Cart list contains "Miravelo Gravel One"
 
 **Test Data:**
-- Article: Samsung 980 PRO 1TB SSD
-- Article ID: `f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d`
+- Article: Miravelo Gravel One
+- Article ID: `788b6181-c18b-4fff-a13a-43b9950c798d`
 
 ---
 
 ### Test #pjz - Complete Order
 **Action:** User adds an article to cart and completes the order
 **Steps:**
-1. Click "Add to Cart" button for Keychron K2 Mechanical Keyboard
+1. Click "Add to Cart" button for GravelKing Tubeless Tires
 2. Navigate to cart page
 3. Verify article appears in cart list
 4. Click "Complete Order" button
 5. Order confirmation page displays
 
 **Verification:**
-- Order details page shows "Keychron K2 Mechanical Keyboard" in order items
+- Order details page shows "GravelKing Tubeless Tires" in order items
 
 **Test Data:**
-- Article: Keychron K2 Mechanical Keyboard
-- Article ID: `d7e9a1e0-1234-4c5b-9876-abcdef123456`
+- Article: GravelKing Tubeless Tires
+- Article ID: `ca79f826-8b2e-4d52-88c8-31edba8aace4`
 
 ---
 
 ### Test #ctn - Navigate to Orders
 **Action:** User navigates to the orders overview page
 **Steps:**
-1. Add Dell XPS 15 Laptop to cart
+1. Add Aero Road Helmet to cart
 2. Navigate to cart page
 3. Complete an order to ensure at least one order exists
 4. Click "Orders" button in navigation menu
@@ -74,33 +74,33 @@
 - Orders overview root element is visible
 
 **Test Data:**
-- Article: Dell XPS 15 Laptop
-- Article ID: `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d`
+- Article: Aero Road Helmet
+- Article ID: `adc88073-ac0e-409f-b4eb-f6a345ec3b09`
 
 ---
 
 ### Test #izv - Remove Article from Cart
 **Action:** User adds multiple articles to cart and removes one
 **Steps:**
-1. Add LG 34WN80C-B UltraWide Monitor to cart
+1. Add Miravelo Carbon Gravel Wheelset to cart
 2. Navigate to cart page
 3. Click "Continue Shopping" button
-4. Add Sony WH-1000XM5 Headphones to cart
+4. Add Merino Cycling Jersey to cart
 5. Navigate to cart page
 6. Verify both articles are visible in cart
-7. Click remove button for Sony headphones
-8. Verify Sony headphones are removed from cart
+7. Click remove button for the jersey
+8. Verify the jersey is removed from cart
 
 **Verification:**
-- Cart initially contains both LG monitor and Sony headphones
-- After removal, cart no longer contains Sony headphones text
-- Cart still contains LG monitor
+- Cart initially contains both the wheelset and the jersey
+- After removal, cart no longer contains the jersey text
+- Cart still contains the wheelset
 
 **Test Data:**
-- Article 1: LG 34WN80C-B UltraWide Monitor
-  - ID: `d4e5f6a7-b8c9-7d8e-2f3a-1b2c3d4e5f6a`
-- Article 2: Sony WH-1000XM5 Headphones
-  - ID: `0f5e45d3-aaa3-4cde-a1b2-9e8f0d1a2b3c`
+- Article 1: Miravelo Carbon Gravel Wheelset
+  - ID: `90b83b4a-1a31-461f-b815-7363327fb0c7`
+- Article 2: Merino Cycling Jersey
+  - ID: `c2e55163-bdf8-4a4d-bdab-8168fc68fd2e`
 
 ---
 
@@ -109,14 +109,14 @@
 All tests depend on:
 - Shop backend running and accessible
 - Shop frontend running on configured `CYPRESS_BASE_URL`
-- Keycloak authentication service available (realm `retail`)
+- Keycloak authentication service available (realm `miravelo`)
 - Test user credentials configured in `.env.local`
 - Article catalog containing at least the following items:
-  - Samsung 980 PRO 1TB SSD
-  - Keychron K2 Mechanical Keyboard
-  - LG 34WN80C-B UltraWide Monitor
-  - Sony WH-1000XM5 Headphones
-  - Dell XPS 15 Laptop
+  - Miravelo Gravel One
+  - GravelKing Tubeless Tires
+  - Miravelo Carbon Gravel Wheelset
+  - Merino Cycling Jersey
+  - Aero Road Helmet
 
 ## Notes
 

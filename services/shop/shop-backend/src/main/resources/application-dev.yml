@@ -2,7 +2,7 @@ server:
   port: 8081
 
 # Tokens are issued under the nginx /auth prefix (see stack/docker-compose.yml).
-ISSUER_URI: http://localhost:8080/auth/realms/retail
+ISSUER_URI: http://localhost:8080/auth/realms/miravelo
 
 DATABASE_URL: jdbc:postgresql://localhost:5432/test
 DATABASE_USER: test

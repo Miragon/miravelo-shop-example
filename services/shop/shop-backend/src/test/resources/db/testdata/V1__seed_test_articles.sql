@@ -1,3 +1,3 @@
 INSERT INTO articles (id, name, description, price) VALUES
-    ('246b5980-ff9a-4cf5-803b-cd2d50fe60da', 'Logitech MX Master 3S', 'Advanced wireless mouse with ultra-fast scrolling and ergonomic design.', 99.99),
-    ('f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d', 'Samsung 980 PRO 1TB SSD', 'High-performance NVMe SSD with PCIe 4.0 for gaming and heavy workloads.', 129.99);
+    ('788b6181-c18b-4fff-a13a-43b9950c798d', 'Miravelo Gravel One', 'Aluminium gravel bike built for long weekends in the woods and the occasional questionable shortcut.', 1899.00),
+    ('49597d42-36f0-4f05-a9eb-d9bf6c562d24', 'Miravelo Gravel Pro Carbon', 'Lightweight carbon gravel bike for everyone who just wants to "quickly" ride 120 km.', 4299.00);

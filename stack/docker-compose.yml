@@ -4,12 +4,12 @@
 #     Defaults below target this mode. Keycloak admin is on :8088.
 #   - portless parallel-dev: `dev.sh` (no profile, so nginx stays off) and
 #     dev-env.sh overrides every ${VAR} with branch-specific, hash-derived values.
-name: retail-${BRANCH_SLUG:-local}
+name: miravelo-${BRANCH_SLUG:-local}
 
 services:
   postgres:
     image: postgres:18
-    container_name: retail-${BRANCH_SLUG:-local}-postgres
+    container_name: miravelo-${BRANCH_SLUG:-local}-postgres
     environment:
       POSTGRES_DB: test
       POSTGRES_USER: test
@@ -26,7 +26,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.3
-    container_name: retail-${BRANCH_SLUG:-local}-keycloak
+    container_name: miravelo-${BRANCH_SLUG:-local}-keycloak
     command: start-dev
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
@@ -58,7 +58,7 @@ services:
 
   keycloak-config-cli:
     image: adorsys/keycloak-config-cli:latest-26
-    container_name: retail-${BRANCH_SLUG:-local}-keycloak-config-cli
+    container_name: miravelo-${BRANCH_SLUG:-local}-keycloak-config-cli
     environment:
       KEYCLOAK_URL: http://keycloak:8080${KC_RELATIVE_PATH:-/auth}
       KEYCLOAK_USER: admin
@@ -71,7 +71,7 @@ services:
       KC_WEB_ORIGINS: '["${APP_ORIGIN:-http://localhost:8080}"]'
       KC_TEST_USER_PASSWORD: test
     volumes:
-      - ./keycloak/retail-realm.yaml:/config/retail-realm.yaml:ro
+      - ./keycloak/miravelo-realm.yaml:/config/miravelo-realm.yaml:ro
     depends_on:
       keycloak:
         condition: service_healthy
@@ -82,7 +82,7 @@ services:
   # the frontend (vite) and backend running on the host, plus keycloak in-compose.
   nginx:
     image: nginx:alpine
-    container_name: retail-${BRANCH_SLUG:-local}-nginx
+    container_name: miravelo-${BRANCH_SLUG:-local}-nginx
     profiles: ["local"]
     ports:
       - "8080:80"

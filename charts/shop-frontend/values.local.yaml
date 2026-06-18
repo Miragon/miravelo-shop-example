@@ -11,5 +11,5 @@ ingress:
 
 env:
   KEYCLOAK_URL: "http://localhost:8080/auth"
-  KEYCLOAK_REALM: "retail"
+  KEYCLOAK_REALM: "miravelo"
   KEYCLOAK_CLIENT_ID: "shop-frontend"

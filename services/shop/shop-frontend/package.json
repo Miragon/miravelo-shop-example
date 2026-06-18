@@ -1,6 +1,6 @@
 {
-  "name": "@miragon/ddd-shop",
-  "description": "Example frontend for a DDD-based shop application",
+  "name": "@miragon/miravelo",
+  "description": "Frontend for the Miravelo bike shop DDD example",
   "private": true,
   "type": "module",
   "packageManager": "yarn@4.14.1",

@@ -36,7 +36,7 @@ realm:
     image:
       repository: adorsys/keycloak-config-cli
       tag: "latest-26"
-    # Variable substitution values for files/retail-realm.yaml.
+    # Variable substitution values for files/miravelo-realm.yaml.
     redirectUris: '["http://localhost:8080/*"]'
     webOrigins: '["http://localhost:8080"]'
     testUserPassword: test

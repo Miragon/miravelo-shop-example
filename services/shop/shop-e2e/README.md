@@ -33,7 +33,7 @@ KEYCLOAK_PASSWORD=test
 ```
 
 > **Note:** `alice`, `bob` and `shopkeeper` (all password `test`) are the bundled test users from
-> the `retail` realm — see [stack/keycloak/retail-realm.yaml](../../../stack/keycloak/retail-realm.yaml).
+> the `miravelo` realm — see [stack/keycloak/miravelo-realm.yaml](../../../stack/keycloak/miravelo-realm.yaml).
 > No external accounts or secrets are required.
 
 ## Running Tests
@@ -105,11 +105,11 @@ describe("Shop - Test Suite", function () {
     });
 
     it("Add article to cart", function () {
-        cy.get(`[data-testid="${SHOP_ARTICLES.ADD_TO_CART(SHOP_ARTICLES.ITEMS.SAMSUNG.ID)}"]`)
+        cy.get(`[data-testid="${SHOP_ARTICLES.ADD_TO_CART(SHOP_ARTICLES.ITEMS.GRAVEL_ONE.ID)}"]`)
           .click();
         cy.get(SHOP_MENU.CART).click();
         cy.get(`[data-testid="${SHOP_CART.LIST}"]`)
-          .should("contain.text", SHOP_ARTICLES.ITEMS.SAMSUNG.DESCRIPTION);
+          .should("contain.text", SHOP_ARTICLES.ITEMS.GRAVEL_ONE.DESCRIPTION);
     });
 });
 ```
@@ -190,11 +190,11 @@ Detailed test specifications are documented per suite in `Testspecifications/`.
 
 | Article Name | Article ID | Used In Tests |
 |-------------|-----------|---------------|
-| Samsung 980 PRO 1TB SSD | `f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d` | #unn |
-| Dell XPS 15 Laptop | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | #ctn |
-| Keychron K2 Mechanical Keyboard | `d7e9a1e0-1234-4c5b-9876-abcdef123456` | #pjz |
-| LG 34WN80C-B UltraWide Monitor | `d4e5f6a7-b8c9-7d8e-2f3a-1b2c3d4e5f6a` | #izv |
-| Sony WH-1000XM5 Headphones | `0f5e45d3-aaa3-4cde-a1b2-9e8f0d1a2b3c` | #izv |
+| Miravelo Gravel One | `788b6181-c18b-4fff-a13a-43b9950c798d` | #unn |
+| Aero Road Helmet | `adc88073-ac0e-409f-b4eb-f6a345ec3b09` | #ctn |
+| GravelKing Tubeless Tires | `ca79f826-8b2e-4d52-88c8-31edba8aace4` | #pjz |
+| Miravelo Carbon Gravel Wheelset | `90b83b4a-1a31-461f-b815-7363327fb0c7` | #izv |
+| Merino Cycling Jersey | `c2e55163-bdf8-4a4d-bdab-8168fc68fd2e` | #izv |
 
 When adding a new suite:
 
@@ -211,7 +211,7 @@ Ensure you're running tests in headless mode using `npm run cy:all` or `npm run 
 ### Keycloak authentication failures
 
 - Verify `KEYCLOAK_USERNAME` / `KEYCLOAK_PASSWORD` in `.env.local` match a realm user (default: `alice` / `test`)
-- Make sure Keycloak is up and the `retail` realm was imported (`http://localhost:8080/auth/admin`, `admin` / `admin`)
+- Make sure Keycloak is up and the `miravelo` realm was imported (`http://localhost:8080/auth/admin`, `admin` / `admin`)
 - Ensure `CYPRESS_BASE_URL` points at the reverse proxy origin that also serves Keycloak (`http://localhost:8080`), so the login form stays same-origin
 
 ### Frontend not accessible

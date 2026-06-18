@@ -15,9 +15,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"retail-dev-scripts@workspace:.":
+"miravelo-dev-scripts@workspace:.":
   version: 0.0.0-use.local
-  resolution: "retail-dev-scripts@workspace:."
+  resolution: "miravelo-dev-scripts@workspace:."
   dependencies:
     portless: "npm:0.14.0"
   languageName: unknown

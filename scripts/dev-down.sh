@@ -3,7 +3,7 @@
 # Local Gradle/Vite processes spawned via portless are managed by dev.sh's trap
 # on Ctrl-C; this script only tears down the containers.
 #
-# Besides the current branch's stack, it sweeps every other retail-* compose
+# Besides the current branch's stack, it sweeps every other miravelo-* compose
 # project whose source compose file no longer exists on disk — i.e. stacks left
 # running by a worktree/checkout that has since been deleted. Stacks belonging
 # to live worktrees (compose file still present) are left running so parallel
@@ -29,11 +29,11 @@ remove_alias() {
 docker compose -p "$COMPOSE_PROJECT_NAME" -f "$REPO_ROOT/stack/docker-compose.yml" down --remove-orphans
 remove_alias "$BRANCH_SLUG"
 
-# 2) Orphan sweep: retail-* projects whose compose file is gone (deleted worktree).
+# 2) Orphan sweep: miravelo-* projects whose compose file is gone (deleted worktree).
 #    docker compose ls reports the project name and its config file path(s); if
 #    none of those paths still exist, no live checkout owns the stack anymore.
 while IFS=$'\t' read -r name config_files; do
-  [[ "$name" == retail-* ]] || continue
+  [[ "$name" == miravelo-* ]] || continue
   [[ "$name" == "$COMPOSE_PROJECT_NAME" ]] && continue
 
   alive=0
@@ -45,5 +45,5 @@ while IFS=$'\t' read -r name config_files; do
 
   echo "Cleaning orphaned stack '${name}' (source compose file no longer exists)..."
   docker compose -p "$name" down --remove-orphans
-  remove_alias "${name#retail-}"
+  remove_alias "${name#miravelo-}"
 done < <(docker compose ls -a --format json | jq -r '.[] | [.Name, .ConfigFiles] | @tsv')

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="retail-application" type="CompoundRunConfigurationType">
+  <configuration default="false" name="miravelo-application" type="CompoundRunConfigurationType">
     <toRun name="ShopFrontend" type="js.build_tools.npm" />
     <toRun name="DeliveryBackend" type="SpringBootApplicationConfigurationType" />
     <toRun name="ShopBackend" type="SpringBootApplicationConfigurationType" />

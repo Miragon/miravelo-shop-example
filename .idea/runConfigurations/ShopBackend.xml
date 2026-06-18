@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ShopBackend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="ACTIVE_PROFILES" value="dev" />
-    <module name="retail-ddd-example.services.shop.shop-backend.main" />
+    <module name="miravelo.services.shop.shop-backend.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="io.miragon.shop.ShopApplication" />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />

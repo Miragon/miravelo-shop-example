@@ -34,16 +34,16 @@ class ArticlePersistenceAdapterTest {
         assertThat(articles).usingRecursiveComparison().isEqualTo(
             listOf(
                 testArticle(
-                    id = ArticleId("246b5980-ff9a-4cf5-803b-cd2d50fe60da"),
-                    name = "Logitech MX Master 3S",
-                    description = "Advanced wireless mouse with ultra-fast scrolling and ergonomic design.",
-                    price = 99.99
+                    id = ArticleId("788b6181-c18b-4fff-a13a-43b9950c798d"),
+                    name = "Miravelo Gravel One",
+                    description = "Aluminium gravel bike built for long weekends in the woods and the occasional questionable shortcut.",
+                    price = 1899.00
                 ),
                 testArticle(
-                    id = ArticleId("f2b5c8a0-1d3e-4c5b-9f3e-7d6f8a2b1c3d"),
-                    name = "Samsung 980 PRO 1TB SSD",
-                    description = "High-performance NVMe SSD with PCIe 4.0 for gaming and heavy workloads.",
-                    price = 129.99
+                    id = ArticleId("49597d42-36f0-4f05-a9eb-d9bf6c562d24"),
+                    name = "Miravelo Gravel Pro Carbon",
+                    description = "Lightweight carbon gravel bike for everyone who just wants to \"quickly\" ride 120 km.",
+                    price = 4299.00
                 )
             )
         )

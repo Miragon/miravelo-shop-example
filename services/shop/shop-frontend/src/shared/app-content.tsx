@@ -41,7 +41,7 @@ export const AppContent = () => {
                         onClick={handleNavigateToArticles}
                         sx={{mr: 2}}>
                         <Typography variant="h6" component="div">
-                            Nerd Alert
+                            Miravelo
                         </Typography>
                     </Button>
 

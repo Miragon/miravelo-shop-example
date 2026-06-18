@@ -18,6 +18,6 @@ spring:
     mcp:
       server:
         enabled: true
-        name: nerd-alert-shop
+        name: miravelo-shop
         stdio: true
-        instructions: "This shop offers a wide range of tech-products one can search for and order"
+        instructions: "Miravelo is a bike shop offering gravel bikes, road bikes and cycling gear one can search for and order"
