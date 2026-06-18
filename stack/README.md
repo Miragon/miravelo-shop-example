@@ -1,41 +1,35 @@
-# PostgreSQL Stack
-
-This directory contains PostgreSQL container configuration for local development.
-
-## Installation
-
-Docker Desktop should already be installed. If not:
+# Stack
 
 ```bash
-brew install --cask docker
+# Nur Infrastruktur (Postgres, Keycloak, nginx)
+docker compose up -d
+
+# Inkl. Frontend + Backend
+docker compose --profile with-shop up -d
 ```
 
-## Docker Compose
+## Einstiegspunkte
 
-Start PostgreSQL with Docker:
+| URL | Ziel |
+|-----|------|
+| `http://localhost:8080/` | Frontend |
+| `http://localhost:8080/api/` | Backend |
+| `http://localhost:8080/auth/` | Keycloak |
+| `http://localhost:8080/auth/admin` | Keycloak Admin (admin / admin) |
 
-```bash
-docker-compose up -d
+## Testuser (Realm: retail)
+
+| User | Passwort | Rollen |
+|------|----------|--------|
+| alice | test | CUSTOMER |
+| bob | test | CUSTOMER |
+| shopkeeper | test | CUSTOMER, ADMIN |
+
+## Verzeichnisstruktur
+
 ```
-
-Stop and remove:
-
-```bash
-docker-compose down
-```
-
-## Database Connection
-
-- **Host**: localhost
-- **Port**: 5432
-- **Database**: test
-- **Username**: test
-- **Password**: test
-
-## Health Check
-
-Verify PostgreSQL is ready:
-
-```bash
-docker exec retail-postgres pg_isready -d test -U test
+stack/
+├── keycloak/       # Realm-Konfiguration (keycloak-config-cli)
+├── nginx/          # nginx reverse proxy config
+└── shop/           # Frontend runtime config (app.env)
 ```

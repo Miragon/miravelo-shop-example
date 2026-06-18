@@ -1,0 +1,59 @@
+realm: retail
+enabled: true
+displayName: Retail Example
+
+roles:
+  realm:
+    - name: CUSTOMER
+      description: Standard shop customer
+    - name: ADMIN
+      description: Shop administrator
+
+clients:
+  - clientId: shop-frontend
+    name: Shop Frontend
+    enabled: true
+    publicClient: true
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    frontchannelLogout: true
+    redirectUris: $(KC_REDIRECT_URIS)
+    webOrigins: $(KC_WEB_ORIGINS)
+
+users:
+  - username: alice
+    enabled: true
+    email: alice@example.com
+    firstName: Alice
+    lastName: Example
+    realmRoles:
+      - CUSTOMER
+    credentials:
+      - type: password
+        value: "$(KC_TEST_USER_PASSWORD)"
+        temporary: false
+
+  - username: bob
+    enabled: true
+    email: bob@example.com
+    firstName: Bob
+    lastName: Example
+    realmRoles:
+      - CUSTOMER
+    credentials:
+      - type: password
+        value: "$(KC_TEST_USER_PASSWORD)"
+        temporary: false
+
+  - username: shopkeeper
+    enabled: true
+    email: shopkeeper@example.com
+    firstName: Shop
+    lastName: Keeper
+    realmRoles:
+      - CUSTOMER
+      - ADMIN
+    credentials:
+      - type: password
+        value: "$(KC_TEST_USER_PASSWORD)"
+        temporary: false

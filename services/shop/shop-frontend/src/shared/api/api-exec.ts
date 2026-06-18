@@ -1,28 +1,26 @@
 import {AxiosResponse, isAxiosError} from "axios";
 import {BaseAPI} from "../../api/base.ts";
 import {Configuration} from "../../api";
-import {initRuntimeConfig} from "../runtime-config.ts";
 
 type ApiCtor<API extends BaseAPI> = new (config: Configuration) => API;
 type ApiExecute<API extends BaseAPI, T> = (api: API) => Promise<AxiosResponse<T>>;
 
-const createApiConfiguration = async (): Promise<Configuration> => {
-    const runtimeConfig = await initRuntimeConfig();
+const createApiConfiguration = (): Configuration => {
     const token = localStorage.getItem("dddToken");
     return new Configuration({
-        basePath: runtimeConfig.shopBackendUrl,
+        basePath: "",
         baseOptions: {
             headers: token ? {"Authorization": `Bearer ${token}`} : {},
         },
     });
-}
+};
 
 export async function apiExec<API extends BaseAPI, T>(
     ApiClass: ApiCtor<API>,
     executeRequest: ApiExecute<API, T>
 ): Promise<T> {
     try {
-        const config = await createApiConfiguration();
+        const config = createApiConfiguration();
         const response = await executeRequest(new ApiClass(config));
         return response.data;
     } catch (error) {
@@ -32,7 +30,6 @@ export async function apiExec<API extends BaseAPI, T>(
             }
             throw new Error(error.message);
         }
-
         throw new Error(`${error}`);
     }
 }

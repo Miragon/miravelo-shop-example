@@ -1,6 +1,6 @@
 SERVER_PORT: 8081
 
-ISSUER_URI: https://retail-ddd-example.eu.auth0.com/
+ISSUER_URI: http://localhost:8080/auth/realms/retail
 
 DATABASE_URL: jdbc:postgresql://localhost:5432/test
 DATABASE_USER: test
@@ -9,5 +9,5 @@ DATABASE_DRIVER_CLASS_NAME: org.postgresql.Driver
 DATABASE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
 DATABASE_SAMPLE_DATA_ENABLED: true
 
-CORS_ALLOWED_ORIGINS: http://localhost:5173
+CORS_ALLOWED_ORIGINS: "http://localhost:8080,http://localhost:5173"
 SWAGGER_API_ENABLED: true

@@ -1,28 +1,11 @@
 import {createElement, type ReactNode, useEffect, useState} from "react";
 
 export interface AppRuntimeConfig {
-    shopBackendUrl: string;
-    oauthDomain: string;
-    oauthClientId: string;
-    oauthAudience?: string;
+    keycloakUrl: string;
+    keycloakRealm: string;
+    keycloakClientId: string;
 }
 
-const normalizeShopBackendUrl = (value: string): string => {
-    if (value === "/") {
-        return "/";
-    }
-
-    try {
-        const parsedUrl = new URL(value);
-        if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-            throw new Error("Invalid protocol");
-        }
-    } catch (_error) {
-        throw new Error(`Invalid SHOP_BACKEND_URL. Expected '/' or full http(s) URL, got: ${value}`);
-    }
-
-    return value.replace(/\/+$/, "");
-};
 const envFileUrl = "/app.env";
 
 let runtimeConfig: AppRuntimeConfig | null = null;
@@ -72,10 +55,9 @@ export const initRuntimeConfig = async (): Promise<AppRuntimeConfig> => {
 
     const parsed = parseEnvFile(await response.text());
     runtimeConfig = {
-        shopBackendUrl: normalizeShopBackendUrl(requireConfigValue(parsed, "SHOP_BACKEND_URL")),
-        oauthDomain: requireConfigValue(parsed, "OAUTH_DOMAIN"),
-        oauthClientId: requireConfigValue(parsed, "OAUTH_CLIENT_ID"),
-        oauthAudience: parsed["OAUTH_AUDIENCE"]?.trim() || undefined,
+        keycloakUrl: requireConfigValue(parsed, "KEYCLOAK_URL"),
+        keycloakRealm: requireConfigValue(parsed, "KEYCLOAK_REALM"),
+        keycloakClientId: requireConfigValue(parsed, "KEYCLOAK_CLIENT_ID"),
     };
 
     return runtimeConfig;
