@@ -51,99 +51,124 @@ Within this monorepo, we are using a variety of technologies to keep things inte
 
 **Infrastructure Crew:**
 
-- **Auth0** - Authentication that just works™
-- **Docker** - Containerization for the container-curious
+- **Keycloak** - Self-hosted auth, bundled and pre-configured so you don't have to sign up for anything
+- **Docker + Docker Compose** - Containerization for the container-curious
 - **Kubernetes + Helm** - Orchestration without the orchestra pit
 - **Minikube** - Kubernetes for your laptop
 
-## 🚀 Quick Start (Or Not So Quick)
+## 🚀 Quick Start (The Easy Way™)
 
-1. **Fire up the infrastructure** (grab a coffee, this takes a moment):
+The fastest way to get the whole shop running — including a pre-configured **Keycloak** with
+ready-to-use test users — is the bundled Docker Compose stack in [`stack/`](stack/):
+
+```bash
+cd stack
+
+# Just the infrastructure (Postgres, Keycloak, nginx reverse proxy)
+docker compose up -d
+
+# ...or the full shop (infrastructure + backend + frontend)
+docker compose --profile with-shop up -d
+```
+
+Everything is reachable through the nginx reverse proxy on a single port:
+
+| URL | Target |
+|-----|--------|
+| `http://localhost:8080/` | Frontend |
+| `http://localhost:8080/api/` | Backend |
+| `http://localhost:8080/auth/` | Keycloak |
+| `http://localhost:8080/auth/admin` | Keycloak Admin (`admin` / `admin`) |
+
+Log in with one of the bundled test users (realm `retail`, password `test`): `alice`, `bob`
+(both `CUSTOMER`), or `shopkeeper` (`CUSTOMER` + `ADMIN`). See [stack/README.md](stack/README.md)
+for details.
+
+### Running services locally (without Compose)
+
+You can also run the backends/frontend directly while keeping the infrastructure in Compose:
+
+1. **Start the infrastructure** (Postgres + Keycloak + nginx):
    ```bash
-   minikube start
-   kubectl config use-context minikube
-   minikube tunnel # keep the terminal open
-   ```
-   
-2. **Deploy database to minikube**:
-   ```bash
-   cd charts
-   helm dependency build ./postgres
-   helm upgrade --install postgres ./postgres
-   kubectl get po -w # Wait until the database pod is ready
+   cd stack && docker compose up -d
    ```
 
-3. **Build everything** (grab another coffee):
+2. **Build everything**:
    ```bash
    ./gradlew build
    ```
 
-4. Start the services
+3. **Start the services**
+   - **Backends**: run the "retail application" compound config in IntelliJ, or
+     `./gradlew :services:shop:shop-backend:bootRun` (and likewise for delivery/warehouse).
+     The dev profile already points `ISSUER_URI` at the local Keycloak realm
+     (see [application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml)).
+   - **Frontend**: `cd services/shop/shop-frontend && yarn dev`.
+     Local Keycloak settings live in
+     [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env).
 
-   **a) locally**
-   Start "retail application" by running compound config within IntelliJ
+### Running on Minikube (alternative)
 
-   **b) within Minikube** (you know the drill):
-   ```bash
-   # Build all the images
-   minikube image build -t shop-backend:local -f services/shop/shop-backend/Dockerfile .
-   minikube image build -t delivery-backend:local -f services/delivery/delivery-backend/Dockerfile .
-   minikube image build -t warehouse-backend:local -f services/warehouse/warehouse-backend/Dockerfile .
-   minikube image build -t shop-frontend:local -f services/shop/shop-frontend/Dockerfile .
-   
-   # Deploy the shop
-   helm upgrade --install shop-backend ./shop-backend --values ./shop-backend/values.local.yaml
-   ```
+A Helm-based Minikube setup also exists under [`charts/`](charts/):
 
-## 🔐 Auth0 Setup (Account, Client, Users)
+```bash
+minikube start
+kubectl config use-context minikube
+minikube tunnel # keep the terminal open
 
-If you want to run OAuth with your own Auth0 tenant, use this flow:
+cd charts
+helm dependency build ./postgres
+helm upgrade --install postgres ./postgres
+kubectl get po -w # Wait until the database pod is ready
 
-1. Create an Auth0 account and tenant
-   - Go to `https://auth0.com/` and create a free account
-   - Create a tenant (domain looks like `your-tenant.eu.auth0.com` or `your-tenant.us.auth0.com`)
+# Build all the images
+minikube image build -t shop-backend:local -f services/shop/shop-backend/Dockerfile .
+minikube image build -t delivery-backend:local -f services/delivery/delivery-backend/Dockerfile .
+minikube image build -t warehouse-backend:local -f services/warehouse/warehouse-backend/Dockerfile .
+minikube image build -t shop-frontend:local -f services/shop/shop-frontend/Dockerfile .
 
-2. Create an API (optional but recommended)
-   - Auth0 Dashboard -> `Applications` -> `APIs` -> `Create API`
-   - Example:
-     - Name: `Retail API`
-     - Identifier (Audience): `https://retail-ddd-example.api`
-   - Save the API
+# Deploy the shop
+helm upgrade --install shop-backend ./shop-backend --values ./shop-backend/values.local.yaml
+```
 
-3. Create a frontend client (Single Page Application)
-   - Auth0 Dashboard -> `Applications` -> `Applications` -> `Create Application`
-   - Type: `Single Page Application`
-   - In the app settings, configure for local usage:
-     - Allowed Callback URLs: `http://localhost:5173, http://localhost:8080`
-     - Allowed Logout URLs: `http://localhost:5173, http://localhost:8080`
-     - Allowed Web Origins: `http://localhost:5173, http://localhost:8080`
-   - Save and copy:
-     - `Domain` (your tenant domain)
-     - `Client ID`
+**Keycloak** runs in-cluster too, as its own chart
+([charts/infrastructure/keycloak](charts/infrastructure/keycloak)) behind Traefik under `/auth`,
+with the `retail` realm imported by `keycloak-config-cli`. The services are wired to it via the
+`KEYCLOAK_*` ([charts/shop-frontend/values.local.yaml](charts/shop-frontend/values.local.yaml)) and
+`security.issuer-uri` / `security.jwk-set-uri`
+([charts/shop-backend/values.local.yaml](charts/shop-backend/values.local.yaml)) values. The backend
+validates the token `iss` against the browser-facing `issuer-uri` but fetches JWKS from the
+in-cluster `jwk-set-uri` (since the browser URL isn't reachable from inside a pod). See
+[charts/README.md](charts/README.md) for the full Minikube/Traefik walkthrough.
 
-4. Create users
-   - Auth0 Dashboard -> `User Management` -> `Users` -> `Create User`
-   - Use the default database connection (`Username-Password-Authentication`) or your own connection
-   - Ensure this connection is enabled for your SPA application
+## 🔐 Authentication (Keycloak)
 
-5. Wire Auth0 values into this project
-   - Frontend local runtime config:
-     - [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env)
-     - Set:
-       - `OAUTH_ENABLED=true`
-       - `OAUTH_DOMAIN=<your-tenant-domain>`
-       - `OAUTH_CLIENT_ID=<your-client-id>`
-       - `OAUTH_AUDIENCE=<your-api-identifier>` (or empty, depending on your token setup)
-   - Shop backend local issuer:
-     - [services/shop/shop-backend/src/main/resources/application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml)
-     - Set `SECURITY_OAUTH2_ISSUER_URI=https://<your-tenant-domain>/`
+Authentication is handled by a **self-hosted Keycloak** that ships with the Docker Compose stack —
+no external accounts, no sign-up, no secrets to copy around. On startup,
+[keycloak-config-cli](https://github.com/adorsys/keycloak-config-cli) imports the `retail` realm
+from [stack/keycloak/retail-realm.yaml](stack/keycloak/retail-realm.yaml), which defines:
 
-6. Wire Auth0 values for Helm/Minikube
-   - Frontend Helm values:
-     - [charts/shop-frontend/values.local.yaml](charts/shop-frontend/values.local.yaml)
-   - Backend Helm values:
-     - [charts/shop-backend/values.local.yaml](charts/shop-backend/values.local.yaml)
-   - Set the same domain/client/issuer values there before `helm upgrade --install`
+- A public SPA client `shop-frontend`
+- Realm roles `CUSTOMER` and `ADMIN`
+- Three test users (all with password `test`):
+
+  | User | Roles |
+  |------|-------|
+  | `alice` | `CUSTOMER` |
+  | `bob` | `CUSTOMER` |
+  | `shopkeeper` | `CUSTOMER`, `ADMIN` |
+
+How the pieces are wired:
+
+- **Frontend** reads its Keycloak settings at runtime from
+  [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env)
+  (`KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`).
+- **Backend** validates JWTs against the realm via `ISSUER_URI`
+  (`http://localhost:8080/auth/realms/retail`), configured in
+  [application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml).
+
+To inspect or tweak realm settings, open the admin console at
+`http://localhost:8080/auth/admin` (`admin` / `admin`).
 
 ## 🏗️ Architecture: It's Hexagonal, Darling
 

@@ -45,3 +45,7 @@ spec:
               value: {{ index .Values.application "sample-data" "enabled" | quote }}
             - name: ISSUER_URI
               value: {{ index .Values.application.security "issuer-uri" | quote }}
+            {{- with (index .Values.application.security "jwk-set-uri") }}
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: {{ . | quote }}
+            {{- end }}

@@ -1,13 +1,18 @@
 # Shop E2E Tests
 
-End-to-end tests for the Shop service using Cypress with Auth0 authentication and Mochawesome reporting.
+End-to-end tests for the Shop service using Cypress with Keycloak authentication and Mochawesome reporting.
 
 ## Prerequisites
 
-- **Shop Frontend**: Running on `http://localhost:5173` (default)
-- **Shop Backend**: Running and accessible
+- **Running shop stack**: The simplest way is the bundled Docker Compose stack
+  (`cd stack && docker compose --profile with-shop up -d`), which serves the frontend, backend
+  and **Keycloak** behind a single nginx reverse proxy on `http://localhost:8080`.
 - **Node.js**: Version compatible with the project
 - **Environment Configuration**: `.env.local` file (see below)
+
+> **Why the reverse proxy matters:** the tests log in through the Keycloak login form. Because
+> Keycloak is served under the **same origin** as the app (`http://localhost:8080/auth`), no
+> Cypress `cy.origin()` boundary is needed. Point `CYPRESS_BASE_URL` at that single origin.
 
 ## Setup
 
@@ -22,14 +27,14 @@ npm install
 Create a `.env.local` file in the `services/shop/shop-e2e` directory with the following variables:
 
 ```env
-CYPRESS_BASE_URL=http://localhost:5173
-AUTH0_DOMAIN=your-auth0-domain.auth0.com
-AUTH0_USERNAME=test@example.com
-AUTH0_PASSWORD=your-password
-AUTH0_CLIENT_ID=your-client-id
+CYPRESS_BASE_URL=http://localhost:8080
+KEYCLOAK_USERNAME=alice
+KEYCLOAK_PASSWORD=test
 ```
 
-> **Note:** You can find the credentials in OnePassword under `Fullstack-Example-Configs`.
+> **Note:** `alice`, `bob` and `shopkeeper` (all password `test`) are the bundled test users from
+> the `retail` realm — see [stack/keycloak/retail-realm.yaml](../../../stack/keycloak/retail-realm.yaml).
+> No external accounts or secrets are required.
 
 ## Running Tests
 
@@ -93,7 +98,7 @@ const { ARTICLES } = PAGE;
 
 describe("Shop - Test Suite", function () {
     beforeEach(function () {
-        cy.login(); // Custom command for Auth0 login
+        cy.login(); // Custom command for Keycloak login
         cy.visit(ARTICLES);
         cy.get(`[data-testid^="${SHOP_ARTICLES.CARD}"]`)
           .should("have.length.greaterThan", 10);
@@ -113,18 +118,22 @@ describe("Shop - Test Suite", function () {
 
 **Login Command** (`cy.login()`)
 
-Handles Auth0 authentication flow and session management:
+Drives the Keycloak login form and manages the cached session:
 
 ```typescript
-cy.login(); // Uses default credentials from .env.local
-cy.login("user@example.com", "password"); // Custom credentials
+cy.login(); // Uses default credentials from .env.local (KEYCLOAK_USERNAME / KEYCLOAK_PASSWORD)
+cy.login("bob", "test"); // Custom realm credentials
 ```
+
+It visits the app (which redirects to Keycloak via `login-required`), submits the username and
+password, and waits for keycloak-js to persist the access token in `localStorage` under
+`dddToken`. The session is cached per user/spec with `cy.session()`.
 
 ### Test Data IDs
 
 All test selectors are centralized in `support/commands.ts` under the `DATA_TESTID` constant:
 
-- `DATA_TESTID.AUTH0.*` - Auth0 login selectors
+- `DATA_TESTID.KEYCLOAK.*` - Keycloak login selectors
 - `DATA_TESTID.SHOP_MENU.*` - Navigation menu elements
 - `DATA_TESTID.SHOP_ARTICLES.*` - Article list and cards
 - `DATA_TESTID.SHOP_CART.*` - Shopping cart elements
@@ -156,7 +165,7 @@ Page paths are defined in `support/commands.ts` under the `PAGE` constant:
 
 Each test typically follows this pattern:
 
-1. **Login**: Authenticate via Auth0
+1. **Login**: Authenticate via Keycloak
 2. **Navigate**: Visit the target page
 3. **Interact**: Perform actions (click, type, select)
 4. **Assert**: Verify expected outcomes
@@ -171,7 +180,7 @@ Detailed test specifications are documented per suite in `Testspecifications/`.
 
 ### Coverage Summary
 
-- Authentication (Auth0 login/logout)
+- Authentication (Keycloak login/logout)
 - Navigation menu interactions
 - Shopping cart CRUD operations
 - Order creation and confirmation
@@ -199,11 +208,11 @@ When adding a new suite:
 
 Ensure you're running tests in headless mode using `npm run cy:all` or `npm run cy:spec`. Interactive mode (`npm run cy`) does not generate Mochawesome reports.
 
-### Auth0 authentication failures
+### Keycloak authentication failures
 
-- Verify credentials in `.env.local`
-- Check that `AUTH0_DOMAIN` matches your Auth0 tenant
-- Ensure the Auth0 application is properly configured
+- Verify `KEYCLOAK_USERNAME` / `KEYCLOAK_PASSWORD` in `.env.local` match a realm user (default: `alice` / `test`)
+- Make sure Keycloak is up and the `retail` realm was imported (`http://localhost:8080/auth/admin`, `admin` / `admin`)
+- Ensure `CYPRESS_BASE_URL` points at the reverse proxy origin that also serves Keycloak (`http://localhost:8080`), so the login form stays same-origin
 
 ### Frontend not accessible
 

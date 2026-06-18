@@ -3,8 +3,7 @@ import PluginEvents = Cypress.PluginEvents;
 import PluginConfigOptions = Cypress.PluginConfigOptions;
 
 console.info('CYPRESS_BASE_URL:', process.env.CYPRESS_BASE_URL);
-console.info('AUTH0_DOMAIN:', process.env.AUTH0_DOMAIN);
-console.info('AUTH0_USERNAME:', process.env.AUTH0_USERNAME);
+console.info('KEYCLOAK_USERNAME:', process.env.KEYCLOAK_USERNAME);
 
 export default defineConfig({
     port: 8101,
@@ -51,13 +50,8 @@ export default defineConfig({
             runMode: 1,
         },
         env: {
-            auth0Username: process.env.AUTH0_USERNAME,
-            auth0Password: process.env.AUTH0_PASSWORD,
-            auth0ClientId: process.env.AUTH0_CLIENT_ID
-        },
-        expose: {
-            auth0Domain: process.env.AUTH0_DOMAIN,
-            baseUrl: process.env.CYPRESS_BASE_URL
+            keycloakUsername: process.env.KEYCLOAK_USERNAME,
+            keycloakPassword: process.env.KEYCLOAK_PASSWORD
         },
         //
         setupNodeEvents: (on: PluginEvents, config: PluginConfigOptions) => {

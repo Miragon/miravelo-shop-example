@@ -1,0 +1,17 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "keycloak.fullname" . }}
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ .Values.ingress.entryPoint }}
+  routes:
+    - kind: Rule
+      match: Host(`{{ .Values.ingress.host }}`) && PathPrefix(`{{ .Values.ingress.pathPrefix }}`)
+      services:
+        - name: {{ include "keycloak.fullname" . }}
+          port: {{ .Values.service.port }}
+{{- end }}

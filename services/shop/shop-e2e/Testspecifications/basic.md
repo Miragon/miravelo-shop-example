@@ -7,7 +7,7 @@
 ## Setup
 
 ### Before Each Test
-1. Authenticate user via Auth0 (`cy.login()`)
+1. Authenticate user via Keycloak (`cy.login()`)
 2. Navigate to articles page (`/articles`)
 3. Verify at least 10 article cards are visible
 
@@ -17,10 +17,10 @@
 **Action:** User logs out of the application
 **Steps:**
 1. Click logout button in menu
-2. User is redirected to Auth0 login page
+2. User is redirected to the Keycloak login page
 
 **Verification:**
-- Auth0 username input field is visible
+- Keycloak username input field is visible
 
 **Test Data:** None required
 
@@ -109,7 +109,7 @@
 All tests depend on:
 - Shop backend running and accessible
 - Shop frontend running on configured `CYPRESS_BASE_URL`
-- Auth0 authentication service available
+- Keycloak authentication service available (realm `retail`)
 - Test user credentials configured in `.env.local`
 - Article catalog containing at least the following items:
   - Samsung 980 PRO 1TB SSD

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: keycloak
+description: Self-hosted Keycloak (OAuth2/OIDC) with the retail realm imported via keycloak-config-cli
+type: application
+version: 0.1.0
+appVersion: "26.3"

@@ -2,7 +2,7 @@ import {DATA_TESTID} from "../support/commands";
 import {PAGE} from "../support/commands";
 
 const {
-    AUTH0,
+    KEYCLOAK,
     SHOP_ARTICLES,
     SHOP_CART,
     SHOP_MENU,
@@ -24,7 +24,7 @@ describe("Shop - Menubar Testsuite", function (): void {
 
     it("Logout (#prb)", function () {
         cy.get(SHOP_MENU.LOGOUT).click();
-        cy.get(AUTH0.USERNAME).should("be.visible");
+        cy.get(KEYCLOAK.USERNAME).should("be.visible");
     });
     it("Add article to cart (#unn)", function () {
         cy.get(`[data-testid="${SHOP_ARTICLES.ADD_TO_CART(SHOP_ARTICLES.ITEMS.SAMSUNG.ID)}"]`).click();

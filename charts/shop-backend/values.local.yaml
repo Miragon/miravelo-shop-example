@@ -23,4 +23,9 @@ application:
   sample-data:
     enabled: true
   security:
-    issuer-uri: "https://retail-ddd-example.eu.auth0.com/"
+    # Keycloak realm issuer. Must match the `iss` claim in tokens (the browser-facing URL,
+    # served through Traefik on :8080).
+    issuer-uri: "http://localhost:8080/auth/realms/retail"
+    # JWKS is fetched from the in-cluster Keycloak Service, since the browser-facing
+    # issuer-uri above is not reachable from inside the cluster.
+    jwk-set-uri: "http://keycloak:8080/auth/realms/retail/protocol/openid-connect/certs"

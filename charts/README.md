@@ -6,6 +6,25 @@ Dieser Setup läuft komplett hinter Traefik. Zugriff erfolgt über:
 - Shop Backend: `http://localhost:8080/api/...`
 - Warehouse Backend: `http://localhost:8080/warehouse/...`
 - Delivery Backend: `http://localhost:8080/delivery/...`
+- Keycloak: `http://localhost:8080/auth/` (Admin-Konsole: `/auth/admin`, `admin` / `admin`)
+
+## Authentifizierung (Keycloak)
+
+Keycloak läuft als eigener Chart **im Cluster** (`infrastructure/keycloak`) hinter Traefik unter
+`/auth`. Der `retail`-Realm wird per `keycloak-config-cli` (Helm post-install Hook) importiert und
+legt die Test-User `alice`, `bob` und `shopkeeper` (Passwort `test`) an.
+
+Die Services sind passend konfiguriert:
+
+- Frontend (`shop-frontend/values.local.yaml`): `env.KEYCLOAK_URL` / `KEYCLOAK_REALM` / `KEYCLOAK_CLIENT_ID`
+- Backend (`shop-backend/values.local.yaml`):
+  - `application.security.issuer-uri` → browser-seitige URL (`http://localhost:8080/auth/realms/retail`),
+    muss mit dem `iss`-Claim der Tokens übereinstimmen.
+  - `application.security.jwk-set-uri` → clusterinterner Service
+    (`http://keycloak:8080/auth/realms/retail/protocol/openid-connect/certs`). Wird als
+    `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI` ins Deployment gemappt, da der
+    browser-seitige `issuer-uri` aus dem Pod heraus nicht erreichbar ist. Die `iss`-Prüfung läuft
+    weiterhin gegen den `issuer-uri`.
 
 ## Prerequisites
 
@@ -35,7 +54,7 @@ minikube -p retail-example image build -t warehouse-backend:local -f services/wa
 minikube -p retail-example image build -t shop-frontend:local -f services/shop/shop-frontend/Dockerfile .
 ```
 
-## 3) Infrastruktur deployen (CNPG Operator -> Postgres -> Traefik)
+## 3) Infrastruktur deployen (CNPG Operator -> Postgres -> Traefik -> Keycloak)
 
 ```bash
 helm dependency build ./infrastructure/cnpg-operator
@@ -56,6 +75,11 @@ helm upgrade --install traefik ./infrastructure/traefik \
   --namespace traefik \
   --create-namespace \
   -f infrastructure/traefik/values.yaml 
+
+# Keycloak (Release-Name "keycloak", damit der Service clusterintern als
+# http://keycloak:8080 erreichbar ist – darauf zeigt die backend jwk-set-uri).
+helm upgrade --install keycloak ./infrastructure/keycloak \
+  --namespace retail-local
 ```
 
 ## 4) Services deployen

@@ -1,0 +1,52 @@
+{{- if .Values.realm.import.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "keycloak.fullname" . }}-realm-import
+  labels:
+    {{- include "keycloak.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        {{- include "keycloak.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: keycloak-config-cli
+          image: "{{ .Values.realm.import.image.repository }}:{{ .Values.realm.import.image.tag }}"
+          env:
+            - name: KEYCLOAK_URL
+              value: "http://{{ include "keycloak.fullname" . }}:{{ .Values.service.port }}{{ .Values.http.relativePath }}"
+            - name: KEYCLOAK_USER
+              value: {{ .Values.admin.username | quote }}
+            - name: KEYCLOAK_PASSWORD
+              value: {{ .Values.admin.password | quote }}
+            - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_AVAILABILITYCHECK_TIMEOUT
+              value: "120s"
+            - name: IMPORT_FILES_LOCATION
+              value: "/config/"
+            - name: IMPORT_VARSUBSTITUTION_ENABLED
+              value: "true"
+            - name: KC_REDIRECT_URIS
+              value: {{ .Values.realm.import.redirectUris | quote }}
+            - name: KC_WEB_ORIGINS
+              value: {{ .Values.realm.import.webOrigins | quote }}
+            - name: KC_TEST_USER_PASSWORD
+              value: {{ .Values.realm.import.testUserPassword | quote }}
+          volumeMounts:
+            - name: realm-config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: realm-config
+          configMap:
+            name: {{ include "keycloak.fullname" . }}-realm
+{{- end }}

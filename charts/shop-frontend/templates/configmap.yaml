@@ -6,7 +6,6 @@ metadata:
     {{- include "shop-frontend.labels" . | nindent 4 }}
 data:
   app.env: |
-    SHOP_BACKEND_URL={{ required "shop-frontend: env.SHOP_BACKEND_URL is required" .Values.env.SHOP_BACKEND_URL }}
-    OAUTH_DOMAIN={{ required "shop-frontend: env.OAUTH_DOMAIN is required" .Values.env.OAUTH_DOMAIN }}
-    OAUTH_CLIENT_ID={{ required "shop-frontend: env.OAUTH_CLIENT_ID is required" .Values.env.OAUTH_CLIENT_ID }}
-    OAUTH_AUDIENCE={{ default "" .Values.env.OAUTH_AUDIENCE }}
+    KEYCLOAK_URL={{ required "shop-frontend: env.KEYCLOAK_URL is required" .Values.env.KEYCLOAK_URL }}
+    KEYCLOAK_REALM={{ required "shop-frontend: env.KEYCLOAK_REALM is required" .Values.env.KEYCLOAK_REALM }}
+    KEYCLOAK_CLIENT_ID={{ required "shop-frontend: env.KEYCLOAK_CLIENT_ID is required" .Values.env.KEYCLOAK_CLIENT_ID }}

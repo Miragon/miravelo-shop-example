@@ -52,3 +52,7 @@ application:
     enabled: false
   security:
     issuer-uri: ""
+    # Optional: in-cluster JWKS endpoint. Set this when the browser-facing issuer-uri
+    # is not reachable from inside the cluster (e.g. Keycloak behind Traefik). The `iss`
+    # claim is still validated against issuer-uri; only key material is fetched from here.
+    jwk-set-uri: ""
