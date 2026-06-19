@@ -2,7 +2,7 @@ package io.miragon.shop.adapter.inbound.rest.cart
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.shop.application.port.inbound.CartQuery
-import io.miragon.shop.domain.shared.UserId
+import io.miragon.shop.adapter.inbound.security.JwtUserMapper
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -20,7 +20,7 @@ class GetCartController(
 
     @GetMapping
     fun getCart(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<CartDto> {
-        val userId = UserId(jwt.subject)
+        val userId = JwtUserMapper.toUserId(jwt)
         log.info { "Getting cart for user: $userId" }
         val cart = query.getCart(userId)
         return ResponseEntity.ok(CartDto.fromDomain(cart))

@@ -3,7 +3,7 @@ package io.miragon.shop.adapter.inbound.rest.cart
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.shop.application.port.inbound.AddToCartUseCase
 import io.miragon.shop.domain.article.ArticleId
-import io.miragon.shop.domain.shared.UserId
+import io.miragon.shop.adapter.inbound.security.JwtUserMapper
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -26,7 +26,7 @@ class AddToCartController(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: AddToCartRequest
     ): ResponseEntity<CartDto> {
-        val userId = UserId(jwt.subject)
+        val userId = JwtUserMapper.toUserId(jwt)
         val articleId = ArticleId(request.articleId)
         log.debug { "Received request to add item $articleId to cart of $userId" }
         val cart = addToCartUseCase.addToCart(userId, articleId)
