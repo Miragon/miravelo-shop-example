@@ -10,6 +10,14 @@ updates:
       - "Technical Debt"
     assignees:
       - "emaarco"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
 
   # Config for all gradle dependencies
   - package-ecosystem: "gradle"
