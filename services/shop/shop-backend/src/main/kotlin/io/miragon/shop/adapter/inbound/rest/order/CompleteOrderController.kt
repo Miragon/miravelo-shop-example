@@ -2,7 +2,7 @@ package io.miragon.shop.adapter.inbound.rest.order
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.shop.application.port.inbound.PlaceOrderUseCase
-import io.miragon.shop.domain.shared.UserId
+import io.miragon.shop.adapter.inbound.security.JwtUserMapper
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -20,7 +20,7 @@ class CompleteOrderController(
 
     @PostMapping
     fun completeOrder(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<OrderDto> {
-        val userId = UserId(jwt.subject)
+        val userId = JwtUserMapper.toUserId(jwt)
         log.info { "Completing order for user: $userId" }
         val order = completeOrderUseCase.placeOrder(userId)
         return ResponseEntity.ok(OrderDto.fromDomain(order))

@@ -3,7 +3,7 @@ package io.miragon.shop.adapter.inbound.rest.order
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.shop.application.port.inbound.OrderQuery
 import io.miragon.shop.domain.order.OrderId
-import io.miragon.shop.domain.shared.UserId
+import io.miragon.shop.adapter.inbound.security.JwtUserMapper
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -26,7 +26,7 @@ class GetOrderController(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable orderId: UUID
     ): ResponseEntity<OrderDto> {
-        val userId = UserId(jwt.subject)
+        val userId = JwtUserMapper.toUserId(jwt)
         val orderIdValue = OrderId(orderId)
         log.info { "Getting order: $orderIdValue for user: $userId" }
         val order = query.getOrderById(orderIdValue)
