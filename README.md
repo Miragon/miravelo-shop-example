@@ -1,6 +1,6 @@
-# 🚲 Miravelo — DDD Bike Shop Example
+# 🚲 Miravelo — Bike Shop Example
 
-> *A showcase of how multiple teams can collaborate in a monorepo using Domain-Driven Design*
+> *A showcase of how multiple teams can collaborate in a monorepo*
 
 **Miravelo** is our standard scenario for trainings, workshops and demos — a (fictional) lifestyle
 bike shop selling gravel bikes for weekends in the woods, road bikes for after-work loops, and
@@ -8,30 +8,29 @@ accessories nobody strictly needs but everybody *feels*. It gives every example 
 narrative ("we're building features for a shop") that anyone understands instantly — so the focus
 stays on the architecture, not the domain.
 
-Welcome to our **Domain-Driven Design** showcase!
-This isn't just another "Hello World" - it's a **multi-team monorepo** demonstrating how different bounded contexts can
-coexist, evolve independently, and work together in harmony.
-We've got hexagons, bounded contexts, and more patterns than a textile factory.
+Welcome to the showcase!
+This isn't just another "Hello World" - it's a **multi-team monorepo** demonstrating how independent
+**bounded contexts** can coexist, evolve independently, and work together in harmony.
 
 ## 🎯 What's This All About?
 
-This project demonstrates how **multiple development teams** can work effectively in a **single repository** using **DDD
-principles**, **bounded contexts**, and **Hexagonal Architecture**.
+This project demonstrates how **multiple development teams** can work effectively in a **single repository** with
+clear service boundaries and a shared toolchain.
 
 **Key Concepts Demonstrated:**
 
 - 🏢 **Multi-team ownership** - Each service represents a different team's domain
-- 🔒 **Bounded contexts** - Clear domain boundaries with explicit interfaces
+- 🔒 **Clear service boundaries** - Explicit interfaces between independent services
 - 📦 **Monorepo benefits** - Shared tooling, unified CI/CD, cross-cutting concerns
 - 🏗️ **Independent deployability** - Teams can deploy their services autonomously
 - 📋 **Documentation-driven development** - ADRs, architectural guidelines, and decision tracking
 
-Think of it as a **digital shopping mall** where each team owns their "store" (bounded context) but shares the
+Think of it as a **digital shopping mall** where each team owns their "store" but shares the
 infrastructure, while maintaining clear ownership and autonomy.
 
 ## 🏬 The Domain: The Miravelo bike shop
 
-The domain is **Miravelo**, a bike e-commerce platform with multiple bounded contexts,
+The domain is **Miravelo**, a bike e-commerce platform with multiple services,
 each representing a different aspect of the business:
 
 - **🛒 Shop Service**: The main attraction - handles articles (bikes & gear), orders, and all that e-commerce jazz
@@ -112,6 +111,11 @@ You can also run the backends/frontend directly while keeping the infrastructure
    - **Frontend**: `cd services/shop/shop-frontend && yarn dev`.
      Local Keycloak settings live in
      [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env).
+
+> Working on several branches at once? The **portless parallel-dev** setup gives each
+> worktree its own isolated stack and branch-unique URLs, so you can run multiple
+> variants side by side without port conflicts. See
+> [docs/how-to/portless-parallel-development.md](docs/how-to/portless-parallel-development.md).
 
 ### Running on Minikube (alternative)
 
