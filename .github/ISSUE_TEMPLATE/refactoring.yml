@@ -1,0 +1,66 @@
+name: Refactor
+description: Propose a code refactoring or structural improvement
+title: "[Refactor]: "
+labels:
+  - "Technical Debt"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a refactoring! Please describe the current state, the target state, and the motivation.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the project does this refactoring concern?
+      options:
+        - shop-backend
+        - delivery-backend
+        - warehouse-backend
+        - shop-mcp-client
+        - shop-frontend
+        - infra / stack (Docker, Keycloak, Helm)
+        - Cross-cutting / multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What will be refactored and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current State
+      description: Describe the current implementation and its shortcomings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: target-state
+    attributes:
+      label: Target State
+      description: Describe what the code should look like after the refactoring.
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of Scope
+      description: What will NOT be changed by this refactor?
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Considerations
+      description: Any breaking changes, migration steps, or risks to be aware of?
+    validations:
+      required: false
