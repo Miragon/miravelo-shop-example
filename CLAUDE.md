@@ -138,34 +138,23 @@ Each service implements its own article repository following the same domain mod
 
 ## Local Development Setup
 
-### Parallel-Dev (mehrere Checkouts, portless)
+Two ways to run the stack locally:
 
-Einmalig pro Checkout: `npm --prefix scripts install` (installiert portless lokal).
+- **Parallel-Dev (portless):** one isolated stack per branch/worktree, branch-unique
+  URLs, no port collisions. `npm --prefix scripts run dev` (after a one-time
+  `npm --prefix scripts install`). Full guide:
+  `docs/how-to/portless-parallel-development.md`.
+- **Single-origin (nginx):** single checkout via one nginx entry point on `:8080`.
 
-```bash
-npm --prefix scripts run dev        # Compose-Stack + alle Backends/Vite via portless
-npm --prefix scripts run dev:down   # Stack stoppen
-```
+  ```bash
+  cd stack && docker compose --profile solo up -d   # Postgres + Keycloak + nginx (:8080)
+  SPRING_PROFILES_ACTIVE=dev ./gradlew :services:shop:shop-backend:bootRun
+  npm --prefix services/shop/shop-frontend run dev  # Vite :5173
+  # App: http://localhost:8080  (Login alice/test)
+  ```
 
-Pro Branch-Checkout entstehen branch-spezifische URLs (`http://app.<slug>.localhost:1355`,
-`http://shop.<slug>.localhost:1355`, ...) und ein eigener Compose-Stack (Postgres +
-Keycloak) auf hash-derivierten Ports. Zwei Worktrees auf unterschiedlichen
-Branches laufen so kollisionsfrei parallel. Details: `stack/README.md`.
-
-### Lokal single-origin (single-clone, ohne portless)
-
-```bash
-cd stack && docker compose --profile solo up -d   # Postgres + Keycloak + nginx (:8080)
-SPRING_PROFILES_ACTIVE=dev ./gradlew :services:shop:shop-backend:bootRun
-npm --prefix services/shop/shop-frontend run dev  # Vite :5173
-# App: http://localhost:8080  (Login alice/test)
-```
-
-nginx auf `:8080` ist der einzige Entry-Point: `/` → Vite, `/api` → Backend
-(festen dev-Ports 8081/8082/8083/8085), `/auth` → Keycloak. Keycloak-Admin direkt
-unter `:8088/auth`. Das `--profile solo` ist nötig (sonst startet nginx nicht);
-`dev.sh` lässt es weg, damit nginx im portless-Modus aus bleibt. Details und
-Helm/Minikube-Alternative: `stack/README.md` bzw. `charts/README.md`.
+Details for both modes (and the Helm/Minikube alternative): `stack/README.md` and
+`charts/README.md`.
 
 ## Testing Strategy
 
