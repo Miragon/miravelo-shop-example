@@ -40,6 +40,11 @@ docker compose -f "$REPO_ROOT/stack/docker-compose.yml" up -d --wait
 # invocations). --no-tls + the unprivileged port from $PORTLESS_PORT.
 "$PORTLESS" proxy start --no-tls --port "${PORTLESS_PORT}" >/dev/null 2>&1 || true
 
+# Reap routes/dev-servers leaked by a previously SIGKILLed/crashed session before
+# this branch registers its own. prune only touches orphans whose owning CLI is
+# already dead, so live parallel worktrees are unaffected.
+"$PORTLESS" prune >/dev/null 2>&1 || true
+
 "$PORTLESS" alias "auth.${BRANCH_SLUG}" "${KEYCLOAK_PORT}"
 
 pids=()

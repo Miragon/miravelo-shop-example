@@ -1,30 +1,30 @@
 # Local Kubernetes Setup with Minikube, Helm, Traefik and CNPG
 
-Dieser Setup läuft komplett hinter Traefik. Zugriff erfolgt über:
+This setup runs entirely behind Traefik. Access goes through:
 
 - Frontend: `http://localhost:8080/`
 - Shop Backend: `http://localhost:8080/api/...`
 - Warehouse Backend: `http://localhost:8080/warehouse/...`
 - Delivery Backend: `http://localhost:8080/delivery/...`
-- Keycloak: `http://localhost:8080/auth/` (Admin-Konsole: `/auth/admin`, `admin` / `admin`)
+- Keycloak: `http://localhost:8080/auth/` (admin console: `/auth/admin`, `admin` / `admin`)
 
-## Authentifizierung (Keycloak)
+## Authentication (Keycloak)
 
-Keycloak läuft als eigener Chart **im Cluster** (`infrastructure/keycloak`) hinter Traefik unter
-`/auth`. Der `miravelo`-Realm wird per `keycloak-config-cli` (Helm post-install Hook) importiert und
-legt die Test-User `alice`, `bob` und `shopkeeper` (Passwort `test`) an.
+Keycloak runs as its own chart **inside the cluster** (`infrastructure/keycloak`) behind Traefik under
+`/auth`. The `miravelo` realm is imported via `keycloak-config-cli` (Helm post-install hook) and
+creates the test users `alice`, `bob` and `shopkeeper` (password `test`).
 
-Die Services sind passend konfiguriert:
+The services are configured accordingly:
 
 - Frontend (`shop-frontend/values.local.yaml`): `env.KEYCLOAK_URL` / `KEYCLOAK_REALM` / `KEYCLOAK_CLIENT_ID`
 - Backend (`shop-backend/values.local.yaml`):
-  - `application.security.issuer-uri` → browser-seitige URL (`http://localhost:8080/auth/realms/miravelo`),
-    muss mit dem `iss`-Claim der Tokens übereinstimmen.
-  - `application.security.jwk-set-uri` → clusterinterner Service
-    (`http://keycloak:8080/auth/realms/miravelo/protocol/openid-connect/certs`). Wird als
-    `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI` ins Deployment gemappt, da der
-    browser-seitige `issuer-uri` aus dem Pod heraus nicht erreichbar ist. Die `iss`-Prüfung läuft
-    weiterhin gegen den `issuer-uri`.
+  - `application.security.issuer-uri` → browser-side URL (`http://localhost:8080/auth/realms/miravelo`),
+    must match the `iss` claim of the tokens.
+  - `application.security.jwk-set-uri` → cluster-internal service
+    (`http://keycloak:8080/auth/realms/miravelo/protocol/openid-connect/certs`). Mapped into the
+    deployment as `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`, because the browser-side
+    `issuer-uri` is not reachable from inside the pod. The `iss` check still runs against the
+    `issuer-uri`.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ Die Services sind passend konfiguriert:
 - kubectl
 - Helm
 
-## 1) Minikube starten
+## 1) Start Minikube
 
 ```bash
 minikube config set driver docker
@@ -41,7 +41,7 @@ minikube start -p miravelo-example
 kubectl config use-context miravelo-example
 ```
 
-## 2) Projekt bauen und Images in Minikube bauen
+## 2) Build the project and build images in Minikube
 
 ```bash
 cd ..
@@ -54,7 +54,7 @@ minikube -p miravelo-example image build -t warehouse-backend:local -f services/
 minikube -p miravelo-example image build -t shop-frontend:local -f services/shop/shop-frontend/Dockerfile .
 ```
 
-## 3) Infrastruktur deployen (CNPG Operator -> Postgres -> Traefik -> Keycloak)
+## 3) Deploy the infrastructure (CNPG operator -> Postgres -> Traefik -> Keycloak)
 
 ```bash
 helm dependency build ./infrastructure/cnpg-operator
@@ -76,13 +76,13 @@ helm upgrade --install traefik ./infrastructure/traefik \
   --create-namespace \
   -f infrastructure/traefik/values.yaml 
 
-# Keycloak (Release-Name "keycloak", damit der Service clusterintern als
-# http://keycloak:8080 erreichbar ist – darauf zeigt die backend jwk-set-uri).
+# Keycloak (release name "keycloak", so the service is reachable cluster-internally
+# as http://keycloak:8080 — the backend jwk-set-uri points there).
 helm upgrade --install keycloak ./infrastructure/keycloak \
   --namespace miravelo-local
 ```
 
-## 4) Services deployen
+## 4) Deploy the services
 
 ```bash
 helm upgrade --install shop-backend ./shop-backend \
@@ -102,15 +102,15 @@ helm upgrade --install shop-frontend ./shop-frontend \
   -f ./shop-frontend/values.local.yaml
 ```
 
-## 5) Zugriff aktivieren
+## 5) Enable access
 
-Traefik läuft als `LoadBalancer` auf Port `8080` (Services routen intern per Traefik IngressRoute):
+Traefik runs as a `LoadBalancer` on port `8080` (services route internally via Traefik IngressRoute):
 
 ```bash
 minikube tunnel -p miravelo-example
 ```
 
-## 6) Routing testen
+## 6) Test the routing
 
 ```bash
 curl http://localhost:8080/
@@ -119,7 +119,7 @@ curl http://localhost:8080/warehouse/api/articles
 curl http://localhost:8080/delivery/api/articles
 ```
 
-## Nützliche Befehle
+## Useful commands
 
 ```bash
 minikube list profiles

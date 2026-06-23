@@ -19,6 +19,16 @@ anything getting in each other's way.
 > *single* branch, the simpler single-origin mode (nginx on `:8080`) is the better
 > fit — see [`stack/README.md`](../../stack/README.md).
 
+## ✅ Prerequisites
+
+- **Node.js 24+** — required by portless (`engines.node >=24`); older versions fail to
+  run it.
+- **Docker or Podman** with **Compose v2** (the `docker compose` CLI) for the per-branch
+  Postgres + Keycloak stack. `dev:down`'s orphan cleanup additionally needs **`jq`**.
+- **Java 21** — for the Gradle/Spring backends.
+- Tested on **macOS and Linux**. Windows is unverified here (portless declares Windows
+  support, but this flow has not been validated on it).
+
 ## 🚀 Quick start
 
 ```bash
@@ -30,7 +40,9 @@ npm --prefix scripts run dev:down   # stop Compose (portless processes via Ctrl-
 `dev:down` stops the current branch's stack and additionally cleans up orphaned
 `miravelo-*` stacks whose Compose file no longer exists (e.g. deleted worktrees).
 Stacks of live worktrees (Compose file still present) keep running — that is exactly
-what makes parallel dev possible.
+what makes parallel dev possible. The shared portless proxy on `:1355` is stopped
+automatically only when the *last* worktree's stack is torn down; while any branch stack
+is still up, the proxy keeps running so the other branches keep routing.
 
 ## 🌐 Entry points
 
@@ -45,7 +57,7 @@ e.g. `spike-keycloak-portless`).
 | `http://delivery.${BRANCH_SLUG}.localhost:1355`  | delivery-backend             |
 | `http://warehouse.${BRANCH_SLUG}.localhost:1355` | warehouse-backend            |
 | `http://auth.${BRANCH_SLUG}.localhost:1355`      | Keycloak                     |
-| `http://auth.${BRANCH_SLUG}.localhost/admin`     | Keycloak Admin (admin/admin) |
+| `http://auth.${BRANCH_SLUG}.localhost:1355/admin`| Keycloak Admin (admin/admin) |
 
 Postgres is not reachable through portless (no HTTP) — connect directly on
 `localhost:${POSTGRES_PORT}` (see the `dev-env.sh` output on startup).
@@ -62,9 +74,14 @@ Postgres is not reachable through portless (no HTTP) — connect directly on
 
 [portless](https://github.com/vercel-labs/portless) is a local reverse proxy that
 occupies **one** port (`1355`) and routes to local processes based on the host name.
-`*.localhost` resolves automatically to `127.0.0.1` on macOS/Linux — no editing of
-`/etc/hosts`, no TLS, no sudo (unprivileged port). That way the entire branch only
-needs this single port facing outward; all service ports underneath are ephemeral.
+`*.localhost` resolves to `127.0.0.1` automatically in Chromium-based browsers
+(Chrome/Edge) and Firefox — no editing of `/etc/hosts`. **Safari** uses the system
+resolver and may not resolve `*.localhost`; if branch URLs don't load there, run
+`npm --prefix scripts exec -- portless hosts sync` once (it writes `/etc/hosts` and may
+prompt for sudo). This setup deliberately runs portless with `--no-tls` on the
+unprivileged port `1355`, so it needs no TLS and no sudo — portless otherwise defaults
+to HTTPS on `:443`, which *does* elevate. That way the entire branch only needs this
+single port facing outward; all service ports underneath are ephemeral.
 
 `dev.sh` uses portless in two ways:
 

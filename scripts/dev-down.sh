@@ -47,3 +47,19 @@ while IFS=$'\t' read -r name config_files; do
   docker compose -p "$name" down --remove-orphans
   remove_alias "${name#miravelo-}"
 done < <(docker compose ls -a --format json | jq -r '.[] | [.Name, .ConfigFiles] | @tsv')
+
+# 3) Reap any dev-server routes leaked by a SIGKILLed session. Safe for parallel
+#    worktrees: prune only touches orphans whose owning CLI process is dead.
+if [[ -x "$PORTLESS" ]]; then
+  "$PORTLESS" prune >/dev/null 2>&1 || true
+fi
+
+# 4) If no miravelo-* stacks remain, this was the last live worktree — stop the
+#    shared portless proxy so it doesn't linger on :${PORTLESS_PORT}. Otherwise
+#    leave it running so other branches keep routing. --port is required because
+#    the proxy runs on a non-default port (proxy stop defaults to the standard one).
+remaining="$(docker compose ls -a --format json | jq -r '.[].Name' | grep -c '^miravelo-' || true)"
+if [[ "${remaining:-0}" -eq 0 && -x "$PORTLESS" ]]; then
+  echo "Last miravelo-* stack torn down — stopping shared portless proxy on :${PORTLESS_PORT}."
+  "$PORTLESS" proxy stop --port "${PORTLESS_PORT}" >/dev/null 2>&1 || true
+fi
