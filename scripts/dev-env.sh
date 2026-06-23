@@ -20,6 +20,11 @@ export COMPOSE_PROJECT_NAME="miravelo-${BRANCH_SLUG}"
 
 export PORTLESS_HTTPS=0
 export PORTLESS_PORT=1355
+# portless writes *.localhost entries to /etc/hosts on the proxy by default,
+# which needs root and would trigger a sudo prompt on TTY-less runs — at odds
+# with this setup's no-sudo design (--no-tls on an unprivileged port). Keep it
+# off; Safari users who need .localhost resolution run `portless hosts sync`.
+export PORTLESS_SYNC_HOSTS=0
 PORTLESS_BASE_SUFFIX=".${BRANCH_SLUG}.localhost:${PORTLESS_PORT}"
 
 export ISSUER_URI="http://auth${PORTLESS_BASE_SUFFIX}/realms/miravelo"
