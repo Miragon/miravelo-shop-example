@@ -1,15 +1,7 @@
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 
 [scripts]
-# Installs portless (the reverse proxy used by the parallel-dev stack). The
-# frontend's own dependencies are installed lazily by dev.sh on first run.
 setup = "npm --prefix scripts install"
-# Brings up the branch-isolated Compose stack (Postgres + Keycloak) and starts
-# all backends + the Vite frontend, routed via portless.
 run = "npm --prefix scripts run dev"
-# Tears down this branch's Compose containers when the workspace is archived.
 archive = "npm --prefix scripts run dev:down"
-# Safe to run several workspaces at once: dev-env.sh derives Postgres/Keycloak
-# ports and the Compose project name from the git branch, and portless routes
-# by per-branch hostname on the shared :1355 proxy.
 run_mode = "concurrent"

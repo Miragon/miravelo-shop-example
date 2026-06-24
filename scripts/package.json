@@ -4,8 +4,8 @@
   "private": true,
   "description": "Local dev tooling for the parallel-dev workflow (portless reverse proxy).",
   "scripts": {
-    "dev": "./dev.sh",
-    "dev:down": "./dev-down.sh"
+    "dev": "./dev.sh up",
+    "dev:down": "./dev.sh down"
   },
   "engines": {
     "node": ">=24"

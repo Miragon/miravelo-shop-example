@@ -2,8 +2,8 @@
 #   - local single-origin: `docker compose --profile solo up` → nginx on :8080
 #     fronts everything (/ → vite:5173, /api/ → backend:8081, /auth/ → keycloak).
 #     Defaults below target this mode. Keycloak admin is on :8088.
-#   - portless parallel-dev: `dev.sh` (no profile, so nginx stays off) and
-#     dev-env.sh overrides every ${VAR} with branch-specific, hash-derived values.
+#   - portless parallel-dev: `dev.sh up` (no profile, so nginx stays off)
+#     overrides every ${VAR} with branch-specific, hash-derived values.
 name: miravelo-${BRANCH_SLUG:-local}
 
 services:
@@ -32,13 +32,8 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HTTP_ENABLED: "true"
-      # Must include the relative path so generated URLs (issuer, endpoints)
-      # carry /auth. Portless sets the bare auth.<slug> host (relative path "/").
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-http://localhost:8080/auth}
-      # Local: served under /auth behind nginx. Portless: dev-env.sh sets "/".
       KC_HTTP_RELATIVE_PATH: ${KC_RELATIVE_PATH:-/auth}
-      # Keep the management endpoint (port 9000) at the root so healthcheck.sh's
-      # /health/ready stays valid regardless of the public relative path.
       KC_HTTP_MANAGEMENT_RELATIVE_PATH: /
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME_STRICT: "false"
@@ -46,7 +41,6 @@ services:
     volumes:
       - ./keycloak/healthcheck.sh:/healthcheck.sh:ro
     ports:
-      # Direct admin access; nginx takes :8080 in local mode. Portless: 16xxx.
       - "${KEYCLOAK_PORT:-8088}:8080"
     healthcheck:
       test: ["CMD", "bash", "/healthcheck.sh"]
@@ -77,9 +71,9 @@ services:
         condition: service_healthy
     restart: "no"
 
-  # Single entry point for local dev — only started with `--profile solo`, so it
-  # never runs in the portless setup (which has its own reverse proxy). Proxies
-  # the frontend (vite) and backend running on the host, plus keycloak in-compose.
+  # Single entry point for local dev — only started with `--profile solo`, 
+  # so it never runs in the portless setup. 
+  # Proxies the frontend (vite) and backend running on the host, plus keycloak in-compose.
   nginx:
     image: nginx:alpine
     container_name: miravelo-${BRANCH_SLUG:-local}-nginx

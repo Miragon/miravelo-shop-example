@@ -1,54 +1,69 @@
 # 🛣️ Portless Parallel-Dev: running multiple branches at once
 
-AI is shifting the bottleneck of software development. Code now appears faster than
-ever — several features in parallel, each in its own worktree. What slows things down
-afterwards is no longer the writing, but **review and testing**: before a branch gets
-merged, you want to *see it running*.
+AI is shifting the bottleneck of software development. Code now appears faster than ever:
+several features in flight at once, each in its own branch. What slows things down
+afterwards is no longer the writing but **review and testing**. Before a branch is merged,
+you want to *see it running*.
 
-This is exactly where a technical obstacle used to sit: **port conflicts.** Two
-checkouts of the same project both want Postgres on `5432`, Keycloak on `8080`, the
-backend on `8081`, and Vite on `5173`. The moment you tried to start two variants at
-once — one to test, one to keep building — everything collided.
+And increasingly you want to see *several* branches running at once, one under test while
+you keep building the next. That is where the old problem shows up: **port conflicts.** Two
+checkouts both want Postgres on `5432`, Keycloak on `8080`, the backend on `8081`, Vite on
+`5173`. Start two of them and everything collides.
 
-**Portless solves this testing bottleneck.** Every worktree gets its own, fully
-isolated stack and unique URLs. You can run as many variants of the project in
-parallel as you like — one per branch — and try them out side by side without
-anything getting in each other's way.
+The way out is **isolation**, and git already taught us the pattern. **Worktrees** let one
+repo check out many branches side by side without collisions; a running stack needs the
+same thing, its own isolated world per branch. The idea underneath is small: give each
+branch its own identity, with distinct ports, names, and URLs.
+
+[portless](https://github.com/vercel-labs/portless) does that for the web layer. Every
+service gets a stable `*.localhost` name, and the real ports float underneath. One nuance
+shapes everything below, though: portless natively covers only JavaScript apps, while this
+stack is mostly Gradle/Spring services and Docker Compose containers. So we borrow
+portless's *philosophy* and apply it by hand to the non-JS parts. The full breakdown is in
+[Portless for JS: the philosophy for everything else](#-portless-for-js-the-philosophy-for-everything-else).
 
 > This document covers the **portless mode** (parallel dev). If you only work on a
-> *single* branch, the simpler single-origin mode (nginx on `:8080`) is the better
-> fit — see [`stack/README.md`](../../stack/README.md).
+> *single* branch, the simpler single-origin mode (nginx on `:8080`) is the better fit;
+> see [`stack/README.md`](../../stack/README.md).
+
+**Just want to run it?** [Quick start](#-quick-start) and [Entry points](#-entry-points)
+are all you need. Everything after that is the *why* behind the design: worth reading if
+you're adopting the pattern, skippable if you only want to use it.
 
 ## ✅ Prerequisites
 
-- **Node.js 24+** — required by portless (`engines.node >=24`); older versions fail to
-  run it.
-- **Docker or Podman** with **Compose v2** (the `docker compose` CLI) for the per-branch
-  Postgres + Keycloak stack. `dev:down`'s orphan cleanup additionally needs **`jq`**.
-- **Java 21** — for the Gradle/Spring backends.
-- Tested on **macOS and Linux**. Windows is unverified here (portless declares Windows
-  support, but this flow has not been validated on it).
+- **Node.js 24+**, required by portless (`engines.node >=24`). Older versions won't run it.
+- **Docker or Podman** with **Compose v2** (the `docker compose` CLI), for the per-branch
+  Postgres + Keycloak stack. `dev:down`'s orphan cleanup also needs **`jq`**.
+- **Java 21**, for the Gradle/Spring backends.
+- Tested on **macOS and Linux**. Windows is unverified here (portless claims Windows
+  support, but this flow hasn't been validated on it).
 
 ## 🚀 Quick start
 
 ```bash
 npm --prefix scripts install        # once per checkout: installs portless
-npm --prefix scripts run dev        # bring up the stack + all backends/frontend via portless
-npm --prefix scripts run dev:down   # stop Compose (portless processes via Ctrl-C in dev)
+npm --prefix scripts run dev        # bring up the stack + all backends/frontend
+npm --prefix scripts run dev:down   # stop Compose (the dev processes stop via Ctrl-C)
 ```
 
-`dev:down` stops the current branch's stack and additionally cleans up orphaned
-`miravelo-*` stacks whose Compose file no longer exists (e.g. deleted worktrees).
-Stacks of live worktrees (Compose file still present) keep running — that is exactly
-what makes parallel dev possible. The shared portless proxy on `:1355` is stopped
-automatically only when the *last* worktree's stack is torn down; while any branch stack
-is still up, the proxy keeps running so the other branches keep routing.
+Both npm scripts are thin wrappers around a single entry point,
+[`scripts/dev.sh`](../../scripts/dev.sh):
+
+```bash
+./scripts/dev.sh up      # == npm run dev
+./scripts/dev.sh down    # == npm run dev:down
+```
+
+`dev:down` tears down the current branch's stack and leaves every other branch's stack
+running, which is what makes parallel dev possible. It also sweeps stacks left behind by
+deleted worktrees and stops the shared proxy once the last stack is gone (see
+[Crash recovery & cleanup](#-crash-recovery--cleanup)).
 
 ## 🌐 Entry points
 
-Each branch gets its own URLs. `$BRANCH_SLUG` is derived from
-`git rev-parse --abbrev-ref HEAD` (lowercased, `/` and `_` replaced with `-` —
-e.g. `spike-keycloak-portless`).
+Each branch gets its own URLs. `$BRANCH_SLUG` comes from `git rev-parse --abbrev-ref HEAD`,
+lowercased, with `/` and `_` replaced by `-` (e.g. `spike-keycloak-portless`).
 
 | URL                                              | Target                       |
 |--------------------------------------------------|------------------------------|
@@ -59,8 +74,8 @@ e.g. `spike-keycloak-portless`).
 | `http://auth.${BRANCH_SLUG}.localhost:1355`      | Keycloak                     |
 | `http://auth.${BRANCH_SLUG}.localhost:1355/admin`| Keycloak Admin (admin/admin) |
 
-Postgres is not reachable through portless (no HTTP) — connect directly on
-`localhost:${POSTGRES_PORT}` (see the `dev-env.sh` output on startup).
+Postgres is not reachable through portless (no HTTP), so connect to it directly on
+`localhost:${POSTGRES_PORT}` (the `dev.sh up` banner prints the port on startup).
 
 ### Test users (realm: miravelo)
 
@@ -70,57 +85,113 @@ Postgres is not reachable through portless (no HTTP) — connect directly on
 | bob        | test     | CUSTOMER        |
 | shopkeeper | test     | CUSTOMER, ADMIN |
 
-## ⚙️ How portless works
+## ⚙️ What portless actually is
 
-[portless](https://github.com/vercel-labs/portless) is a local reverse proxy that
-occupies **one** port (`1355`) and routes to local processes based on the host name.
-`*.localhost` resolves to `127.0.0.1` automatically in Chromium-based browsers
-(Chrome/Edge) and Firefox — no editing of `/etc/hosts`. **Safari** uses the system
-resolver and may not resolve `*.localhost`; if branch URLs don't load there, run
-`npm --prefix scripts exec -- portless hosts sync` once (it writes `/etc/hosts` and may
-prompt for sudo). This setup deliberately runs portless with `--no-tls` on the
-unprivileged port `1355`, so it needs no TLS and no sudo — portless otherwise defaults
-to HTTPS on `:443`, which *does* elevate. That way the entire branch only needs this
-single port facing outward; all service ports underneath are ephemeral.
+You've already seen the one-liner: portless replaces ports with named `.localhost` URLs
+behind one proxy. Three of its mechanics matter once you run this stack, and they explain
+the choices in `dev.sh`.
 
-`dev.sh` uses portless in two ways:
+1. **One proxy, ephemeral apps.** When portless starts a process it injects a free `PORT`
+   (random in `4000-4999`) and routes the hostname to it. Most frameworks read `PORT` on
+   their own. For the ones that don't (Vite, Astro, Angular, and a few others) portless
+   injects the right `--port`/`--host` flags itself. The app ports float; only the proxy
+   port is fixed.
+2. **TLS by default, which we turn off on purpose.** Out of the box portless serves HTTPS
+   + HTTP/2 on `:443`, generates a local CA, and binds a privileged port (which needs
+   `sudo`). We pass `--no-tls` on the unprivileged port `1355` instead, so the whole flow
+   needs no sudo and no TLS trust dance: one outward-facing port per machine, all service
+   ports ephemeral underneath.
+3. **`.localhost` resolution is free in most browsers.** `*.localhost` resolves to
+   `127.0.0.1` automatically in Chromium-based browsers (Chrome/Edge) and Firefox, with no
+   `/etc/hosts` editing. Safari uses the system resolver and may not resolve `*.localhost`;
+   if branch URLs don't load there, run `npm --prefix scripts exec -- portless hosts sync`
+   once (it writes `/etc/hosts` and may prompt for sudo). We keep portless's automatic
+   `/etc/hosts` sync off (`PORTLESS_SYNC_HOSTS=0`) to preserve the no-sudo property.
 
-1. **Alias to a fixed port** — Keycloak runs in the Compose container on the
-   hash-derived host port `${KEYCLOAK_PORT}`. `portless alias auth.<slug>
-   <KEYCLOAK_PORT>` maps the branch host name onto this existing port. The port must
-   be known up front (portless only aliases to an *already* bound port) and be
-   deterministic from the slug, so parallel worktrees don't collide. The same applies
-   to Postgres, which doesn't run through portless at all (raw TCP) but is addressed
-   directly via `localhost:${POSTGRES_PORT}` in `DATABASE_URL`.
-2. **Process with an ephemeral port** — `portless <hostname> <command>` starts a
-   process, injects a free `PORT` env var, reads the actual port, and routes the host
-   name there. The Spring backends bind via `server.port: ${PORT:8080}` (see
-   `application.yml`), and Vite respects `PORT` too. That's why `dev-env.sh` does
-   `unset SPRING_PROFILES_ACTIVE`: the `dev` profile would otherwise override the
-   portless assignment with its fixed port.
+## 🧩 Portless for JS: the philosophy for everything else
 
-## 🧬 Branch isolation
+The most important thing to know about this repo is that only a fraction of what you see is
+portless. The rest is portless's *philosophy*, applied by hand to a stack portless was
+never built to manage.
 
-Two worktrees running side by side without collisions comes from two mechanisms
-working together:
+Portless's convenience features (a `portless.json` with an `apps:` map that "covers all
+workspace packages", and `portless run`, which auto-prefixes the branch name onto a
+worktree's hostname) are built for one specific world: a JavaScript/TypeScript monorepo. It
+discovers apps from `pnpm-workspace.yaml` or the `"workspaces"` field in `package.json`,
+and expects each app to be a package with a `dev` script.
 
-- **`dev-env.sh`** derives deterministic host ports (Postgres/Keycloak) and the
-  `COMPOSE_PROJECT_NAME` from the branch slug via `cksum` → two branches collide
-  neither on container ports nor on Compose projects.
-- **portless host names** carry the slug (`app.<slug>.localhost`, …) → the
-  browser/backend URLs are unique per branch, including `ISSUER_URI`,
-  `CORS_ALLOWED_ORIGINS`, and Keycloak `redirect_uris` (set per slug by
-  `keycloak-config-cli`).
+This project isn't that. Its "apps" are Spring Boot services built with Gradle, plus two
+containers (Postgres and Keycloak) managed by Docker Compose. None of them is a JS
+workspace package, so portless's auto-discovery never sees them. Three concrete gaps
+follow:
 
-The result: a complete stack per branch — its own Postgres, its own Keycloak, its own
-backends, its own frontend — all reachable simultaneously under branch-unique URLs.
-Exactly what you need to test one variant while you keep working on the next.
+| Portless feature (for JS monorepos) | Why it can't carry this stack |
+|---|---|
+| `apps:` map starts every workspace package with one command | The backends are Gradle modules and containers, invisible to npm/pnpm workspace discovery. |
+| `portless run` auto-prefixes the branch onto the hostname | It injects only each app's own URL (`PORTLESS_URL`). But shop needs Keycloak's `ISSUER_URI`, and the frontend needs shop's URL via CORS, so services need each other's branch URLs up front, before they boot. |
+| `portless.json` as the single source of config | It has no field for the proxy port or `--no-tls`; those are env vars or CLI flags. Database ports, the Compose project name, and Keycloak's relative path live entirely outside portless. |
+
+So `dev.sh` doesn't *replace* portless. It extends portless's idea to the non-JS parts of
+the stack and wires the two together. The philosophy is "derive a unique name per branch,
+give every service a stable hostname, let the ports float", and it shows up in three
+layers:
+
+1. **Branch-derived identity (ours).** From the git branch, `dev.sh` computes a
+   `BRANCH_SLUG` and, via a `cksum` hash, deterministic host ports for Postgres and
+   Keycloak plus a unique `COMPOSE_PROJECT_NAME`. Two checkouts then collide on neither
+   container ports nor Compose projects. It's the same "no fixed ports" idea portless
+   brings to JS apps, done in bash for Compose.
+2. **Processes through portless (portless's job).** The three Spring backends and the Vite
+   frontend do honor an injected port, so they go through portless the normal way:
+   `portless shop.<slug> ./gradlew …:bootRun`. The backends bind via
+   `server.port=${PORT:8080}` (see `application.yml`), and Vite gets `--port` injected for
+   free. Ephemeral ports, named URLs, which is what portless is for.
+3. **A container pinned with `alias` (the bridge).** Keycloak runs as a Compose container
+   on a fixed, hash-derived host port, so it can't take an ephemeral `PORT`. portless has a
+   primitive for exactly this: `portless alias auth.<slug> <port>` registers a static route
+   onto an already-bound port (the docs call out Docker as the use case). Postgres isn't
+   HTTP at all, so it skips portless entirely and is reached directly via
+   `localhost:${POSTGRES_PORT}` in `DATABASE_URL`.
+
+Splitting it this way, instead of forcing the stack into portless's config model, keeps
+each layer in the tool that owns it. Compose owns containers, portless owns hostname→port
+routing, and a few derived env vars (`ISSUER_URI`, `CORS_ALLOWED_ORIGINS`,
+`SHOP_BACKEND_URL`, `APP_ORIGIN`, `KEYCLOAK_HOSTNAME`) carry the branch-unique URLs that no
+single tool could infer on its own.
+
+> **One file, two verbs.** All of this lives in a single `dev.sh` with an `up`/`down`
+> dispatch. The branch environment is computed once in a `derive_env` function and shared
+> by both, so there's no separate "env" or "down" file to keep in sync.
+
+The result is a full stack per branch: its own Postgres, Keycloak, backends, and frontend,
+all reachable at once under branch-unique URLs (including the `ISSUER_URI`,
+`CORS_ALLOWED_ORIGINS`, and Keycloak `redirect_uris` that `keycloak-config-cli` sets per
+slug). That is what lets you test one variant while you keep building the next.
+
+## 🧹 Crash recovery & cleanup
+
+Two `portless` housekeeping commands keep parallel dev stable without touching live
+worktrees, because both act only on orphans whose owning CLI process is already dead:
+
+- **`portless prune`** reaps dev-server routes leaked by a session that was `SIGKILL`ed
+  (e.g. a hard stop). `dev.sh up` runs it before registering new routes, and `down` runs it
+  during teardown.
+- The **orphan stack sweep** in `down` is ours, not portless's. It asks `docker compose ls`
+  for every `miravelo-*` project and tears down the ones whose source Compose file no
+  longer exists on disk (stacks left behind by a deleted worktree), while leaving live
+  worktrees' stacks running.
+
+> **A note on hash collisions.** Host ports come from `cksum(slug) % 1000` over a 1000-port
+> window, so two branches can in principle land on the same Postgres or Keycloak port.
+> There's no probing. A collision shows up right away as a Compose "port is already
+> allocated" error on the second `up`; rename the branch and retry. With a handful of
+> concurrent worktrees it effectively never happens.
 
 ## ⚖️ Approach comparison
 
-When you want to run several variants of the project in parallel, there is more than
-one way to go about it — and the choice has real consequences for production parity,
-isolation, and resource usage. Three approaches are worth comparing:
+There's more than one way to run several variants of the project in parallel, and the
+choice has real consequences for production parity, isolation, and resource usage. Three
+approaches are worth comparing:
 
 | Criterion         | **A: Per-branch stack** | **B: Stackless** (H2 + no-secure) | **C: Shared stack** (infra on main, branch only FE/BE) |
 |-------------------|-------------------------|-----------------------------------|--------------------------------------------------------|
@@ -131,54 +202,48 @@ isolation, and resource usage. Three approaches are worth comparing:
 | Startup/branch    | ❌ Keycloak health ~60 s | ✅ seconds                         | ✅ only FE/BE to start                                  |
 | Maintenance       | 🟡 more moving parts    | ❌ separate no-secure profile      | 🟡 wildcard realm + migration discipline               |
 
-**A: Per-branch stack — a dedicated stack (Postgres + Keycloak) *and* all services per
-branch.** Full production parity and full isolation; the price is resources (two
-containers plus JVMs per branch) and a ~60 s Keycloak health wait on startup.
+- **A, per-branch stack (chosen):** a dedicated Postgres + Keycloak plus all services per
+  branch. Full parity and full isolation. The price is resources: two containers plus up to
+  four JVMs per branch (budget very roughly 1.5-2 GB RAM each) and a ~60 s Keycloak health
+  wait at startup.
+- **B, stackless (H2 + a no-secure profile):** fastest, no Docker, but it abstracts away
+  the two things this repo is actually about. Postgres parity (Flyway plus
+  `ddl-auto: validate` against Postgres DDL) and real OIDC both vanish. Fine for pure
+  domain/unit work, useless for verifying auth and persistence locally.
+- **C, shared stack (infra once, branch only runs FE/BE):** keeps A's parity and saves the
+  most resources, but a shared DB and realm mean branches clobber each other's data,
+  migrations, and redirect URIs. A sensible opt-in under resource pressure, not a safe
+  default, since isolation is the whole reason for the setup.
 
-**B: Stackless (H2 + no-secure profile) — no parity.**
-Fastest start, no Docker. But the project stands and falls with exactly the parts
-that B abstracts away:
+**We chose A.** While only a few worktrees run at once and correctness around auth and DB
+migrations matters, full isolation is worth the resources. C could be offered later as an
+opt-in flag without giving up A as the default.
 
-- The schema is created via **Flyway**, and Hibernate runs with `ddl-auto: validate`
-  against Postgres-written DDL (`UUID`, `DOUBLE PRECISION`, `TIMESTAMP`). Under H2 you
-  would either have to maintain H2-compatible migrations or give up `validate` — both
-  undermine the point of the migration tests.
-- There is **no** no-secure profile; `application.yml` requires a real `ISSUER_URI`.
-  You would have to build such a profile and maintain it in parallel with the real
-  `SecurityConfig` (roles `CUSTOMER`/`ADMIN`, JWT, CORS) — it is guaranteed to drift,
-  and that's exactly where the interesting bugs live.
+<details>
+<summary>Why B and C fall down, in detail</summary>
 
-Bottom line: B is fine for pure domain/unit work (there are already tests for that),
-but not for locally verifying auth and persistence behavior. Since this repo hosts a
-Keycloak spike among other things, missing parity would be especially harmful here.
+**B, no parity, and parity is the point.**
+- The schema is created with **Flyway**, and Hibernate runs with `ddl-auto: validate`
+  against Postgres-written DDL (`UUID`, `DOUBLE PRECISION`, `TIMESTAMP`). Under H2 you'd
+  either maintain H2-compatible migrations or give up `validate`, and both defeat the
+  migration tests.
+- There's no no-secure profile; `application.yml` requires a real `ISSUER_URI`. You'd have
+  to build and maintain one alongside the real `SecurityConfig` (roles `CUSTOMER`/`ADMIN`,
+  JWT, CORS), which is guaranteed to drift, and drift is where the interesting bugs live.
 
-**C: Shared stack (infra once, branch only starts FE/BE).**
-Keeps A's parity and saves the most resources (one Postgres, one Keycloak instead of
-n×2 containers; branches start without the Keycloak wait). The price is the loss of
-isolation — and isolation is the actual purpose of the parallel-dev setup:
-
-- **Shared DB:** branches overwrite each other's data. Worse: Flyway migrations
-  diverge per branch. If a branch adds `V2`, it migrates the shared DB and breaks
-  `validate` on main/other branches.
+**C, shared state breaks isolation.**
+- **Shared DB:** branches overwrite each other's data, and Flyway migrations diverge per
+  branch. A branch that adds `V2` migrates the shared DB and breaks `validate` everywhere
+  else.
 - **Shared realm:** `keycloak-config-cli` sets `redirect_uris`/`web-origins` per slug
-  today. With a shared Keycloak you'd need wildcard origins for all branch host
-  names, and one branch's realm changes immediately hit everyone.
+  today; a shared Keycloak would need wildcard origins for every branch host, and one
+  branch's realm edits would hit everyone.
 
-C is a sensible **opt-in optimization** when resource pressure is high *and* branches
-rarely touch the schema or realm. As the default, you'd lose exactly the
-collision-freedom that A guarantees.
-
-**We chose A.** It is the right default as long as only a few worktrees run at once and
-correctness around auth + DB migrations matters (both core topics of this repo). The
-resource downside could later be softened by an optional C-mode flag, without giving
-up A as the safe default.
+</details>
 
 ## 📂 Related files
 
-- [`scripts/dev.sh`](../../scripts/dev.sh) — starts the stack + portless processes
-- [`scripts/dev-env.sh`](../../scripts/dev-env.sh) — derives the slug, ports, and
-  `COMPOSE_PROJECT_NAME` from the branch
-- [`scripts/dev-down.sh`](../../scripts/dev-down.sh) — stops and cleans up
-- [`stack/README.md`](../../stack/README.md) — stack overview + single-origin mode
-- [`stack/docker-compose.yml`](../../stack/docker-compose.yml) — both setups from one
-  file
+- [`scripts/dev.sh`](../../scripts/dev.sh), the single `up`/`down` entry point
+- [`scripts/package.json`](../../scripts/package.json), pins `portless` and maps the npm scripts
+- [`stack/README.md`](../../stack/README.md), stack overview and single-origin mode
+- [`stack/docker-compose.yml`](../../stack/docker-compose.yml), both setups from one file
