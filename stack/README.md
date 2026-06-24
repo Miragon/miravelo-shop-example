@@ -34,7 +34,7 @@ stack/
 ## Local single-origin mode (nginx, without portless)
 
 If you don't work in parallel, start the infra including **nginx** and the services
-directly — without `dev-env.sh`. Backend and frontend run on the host (e.g. via the
+directly — without `dev.sh`'s branch-derived env. Backend and frontend run on the host (e.g. via the
 IntelliJ run configs); nginx proxies them together with Keycloak under `:8080`:
 
 ```bash
@@ -67,6 +67,6 @@ Without env vars set, the `docker-compose.yml` defaults apply (project
 redirect/origin `http://localhost:8080`) — matching `application-dev.yml`
 (`ISSUER_URI=http://localhost:8080/auth/realms/miravelo`, shop `:8081`).
 
-`dev.sh` overrides the same variables via `dev-env.sh` with the branch-specific
+`dev.sh up` overrides the same variables with the branch-specific
 portless values (Keycloak under root path `/`, dedicated host names instead of
 `/auth`), and starts **without** `--profile solo`, so nginx never runs there.
