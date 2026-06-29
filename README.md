@@ -108,7 +108,7 @@ You can also run the backends/frontend directly while keeping the infrastructure
      `./gradlew :services:shop:shop-backend:bootRun` (and likewise for delivery/warehouse).
      The dev profile already points `ISSUER_URI` at the local Keycloak realm
      (see [application-dev.yml](services/shop/shop-backend/src/main/resources/application-dev.yml)).
-   - **Frontend**: `cd services/shop/shop-frontend && yarn dev`.
+   - **Frontend**: `cd services/shop/shop-frontend && npm run dev`.
      Local Keycloak settings live in
      [services/shop/shop-frontend/public/app.env](services/shop/shop-frontend/public/app.env).
 
