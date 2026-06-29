@@ -1,8 +1,1 @@
 node_modules/
-
-# Yarn cache/state (only relevant if you use yarn instead of npm here)
-.yarn/*
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-.pnp.*

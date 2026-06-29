@@ -3,13 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable
-
 # Copy package files
-COPY services/shop/shop-frontend/package.json services/shop/shop-frontend/yarn.lock ./
+COPY services/shop/shop-frontend/package.json services/shop/shop-frontend/package-lock.json ./
 
 # Install dependencies
-RUN yarn install --immutable
+RUN npm ci
 
 # Copy only build-relevant sources
 COPY services/shop/shop-frontend/src ./src
@@ -21,7 +19,7 @@ COPY services/shop/shop-frontend/eslint.config.js ./
 COPY services/shop/shop-frontend/openapitools.json ./
 
 # Build the application
-RUN yarn build
+RUN npm run build
 
 # Production stage
 FROM nginx:alpine
