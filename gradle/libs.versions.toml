@@ -17,7 +17,7 @@ springBootOAuthServer = { module = 'org.springframework.boot:spring-boot-starter
 springDoc = { module = 'org.springdoc:springdoc-openapi-starter-webmvc-ui', version = "3.0.3" }
 jacksonModuleKotlin = { module = 'com.fasterxml.jackson.module:jackson-module-kotlin', version = "2.22.0" }
 springBootJpa = { module = 'org.springframework.boot:spring-boot-starter-data-jpa', version.ref = "springBoot" }
-postgresql = { module = 'org.postgresql:postgresql', version = "42.7.11" }
+postgresql = { module = 'org.postgresql:postgresql', version = "42.7.12" }
 springAiMcpServer = { module = 'org.springframework.ai:spring-ai-starter-mcp-server', version.ref = "springAi" }
 
 # testing
