@@ -3,7 +3,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 springBoot = "4.1.0"
 springGradleDependencyManagement = "1.1.7"
 springAi = "2.0.0"
@@ -15,9 +15,9 @@ springBootWeb = { module = 'org.springframework.boot:spring-boot-starter-web', v
 springBootActuator = { module = 'org.springframework.boot:spring-boot-starter-actuator', version.ref = "springBoot" }
 springBootOAuthServer = { module = 'org.springframework.boot:spring-boot-starter-oauth2-resource-server', version.ref = "springBoot" }
 springDoc = { module = 'org.springdoc:springdoc-openapi-starter-webmvc-ui', version = "3.0.3" }
-jacksonModuleKotlin = { module = 'com.fasterxml.jackson.module:jackson-module-kotlin', version = "2.22.0" }
+jacksonModuleKotlin = { module = 'com.fasterxml.jackson.module:jackson-module-kotlin', version = "2.22.1" }
 springBootJpa = { module = 'org.springframework.boot:spring-boot-starter-data-jpa', version.ref = "springBoot" }
-postgresql = { module = 'org.postgresql:postgresql', version = "42.7.12" }
+postgresql = { module = 'org.postgresql:postgresql', version = "42.7.13" }
 springAiMcpServer = { module = 'org.springframework.ai:spring-ai-starter-mcp-server', version.ref = "springAi" }
 
 # testing
