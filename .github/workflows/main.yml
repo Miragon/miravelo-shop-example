@@ -2,9 +2,14 @@ name: Build Container & Helm Chart
 
 on:
   push:
-  pull_request:
-    types: [ opened, reopened ]
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# One run per ref; a new push cancels an outdated in-progress run instead of burning CI.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
