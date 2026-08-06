@@ -38,8 +38,11 @@ jobs:
         run: docker compose --profile solo up -d --wait
 
       # Backend on :8081 via bootRun (avoids the plain-jar glob ambiguity of build/libs/*.jar).
-      # Dev profile is the default and seeds sample-data articles the specs depend on.
+      # The dev profile supplies ISSUER_URI, the :8081 port, DB config, and enables the
+      # sample-data seed the specs depend on — it is NOT active by default, so set it here.
       - name: Boot shop-backend (:8081, dev)
+        env:
+          SPRING_PROFILES_ACTIVE: dev
         run: ./gradlew --no-daemon :services:shop:shop-backend:bootRun > shop-backend.log 2>&1 &
 
       # Frontend dev server on :5173; nginx proxies / -> host:5173.
