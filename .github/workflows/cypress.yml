@@ -1,61 +1,86 @@
-name: "Run Cypress E2E Tests"
+name: E2E (Cypress)
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "9 3 * * 1-5"  # Every day at midnight
+  push:
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  minikube:
-    name: Start Kubernetes cluster
+  cypress:
+    name: Cypress e2e (full stack)
     runs-on: ubuntu-latest
     steps:
-      - name: Start Minikube
-        id: minikube
-        uses: hiberbee/github-action-minikube@latest
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21 (Corretto) + Gradle cache
+        uses: actions/setup-java@v5.6.0
         with:
-          profile: github
+          distribution: corretto
+          java-version: '21'
+          cache: gradle
 
-      - name: Get Minikube status
-        run: minikube status
-
-      - name: Get cluster info
-        run: kubectl cluster-info
-
-      - name: Get Kubernetes pods
-        run: kubectl get services --all-namespaces
-
-      - name: Get Minikube IP
-        run: echo ${{ steps.minikube.outputs.ip }}
-
-      - name: Get Docker containers
-        run: docker ps
-
-      - name: Get Helm releases
-        uses: hiberbee/github-action-helm@latest
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
         with:
-          helm-command: list
-  #minikube:
-  #  name: Minikube
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v4
-  #      with:
-  #        repository: medyagh/local-dev-example-with-minikube
-  #    - name: Start minikube
-  #      uses: medyagh/setup-minikube@latest
-  #    - name: Try the cluster!
-  #      run: kubectl get pods -A
-  #    - name: Build image
-  #      run: |
-  #        minikube image build -t local/devex:v1 .
-  #    - name: Deploy to minikube
-  #      run:
-  #        kubectl apply -f deploy/k8s.yaml
-  #        kubectl wait --for=condition=ready pod -l app=local-devex
-  #    - name: Test service URLs
-  #      run: |
-  #        minikube service list
-  #        minikube service local-devex-svc --url
-  #        echo "------------------opening the service------------------"
-  #        curl $(minikube service local-devex-svc --url)
+          node-version: '22'
+
+      # Postgres + Keycloak + realm import + nginx(:8080). Default env targets localhost:8080,
+      # so Keycloak is served same-origin under /auth — required by cy.login().
+      - name: Start stack (solo)
+        working-directory: stack
+        run: docker compose --profile solo up -d --wait
+
+      # Backend on :8081 via bootRun (avoids the plain-jar glob ambiguity of build/libs/*.jar).
+      # Dev profile is the default and seeds sample-data articles the specs depend on.
+      - name: Boot shop-backend (:8081, dev)
+        run: ./gradlew --no-daemon :services:shop:shop-backend:bootRun > shop-backend.log 2>&1 &
+
+      # Frontend dev server on :5173; nginx proxies / -> host:5173.
+      - name: Install & start frontend (:5173)
+        working-directory: services/shop/shop-frontend
+        run: |
+          npm ci
+          npm run dev > "$GITHUB_WORKSPACE/frontend.log" 2>&1 &
+
+      - name: Wait for app readiness
+        run: |
+          wait_for() {
+            local url="$1"
+            for _ in $(seq 1 60); do
+              if curl -sf "$url" >/dev/null; then
+                echo "ready: $url"
+                return 0
+              fi
+              sleep 3
+            done
+            echo "timed out waiting for $url" >&2
+            return 1
+          }
+          wait_for http://localhost:8081/api/articles
+          wait_for http://localhost:8080/
+          wait_for http://localhost:8080/auth/realms/miravelo/.well-known/openid-configuration
+
+      - name: Install e2e deps
+        working-directory: services/shop/shop-e2e
+        run: npm ci
+
+      # Bypass the .env.local-based npm script (that file is gitignored); pass config via env.
+      - name: Run Cypress (headless, chrome)
+        working-directory: services/shop/shop-e2e
+        env:
+          CYPRESS_BASE_URL: http://localhost:8080
+          KEYCLOAK_USERNAME: alice
+          KEYCLOAK_PASSWORD: test
+        run: node support/cy.mjs all
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            services/shop/shop-e2e/screenshots
+            services/shop/shop-e2e/reports
+            shop-backend.log
+            frontend.log
