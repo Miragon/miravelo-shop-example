@@ -3,7 +3,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 springBoot = "4.1.1"
 springGradleDependencyManagement = "1.1.7"
 springAi = "2.0.1"
@@ -14,8 +14,8 @@ springSecurity = { module = 'org.springframework.boot:spring-boot-starter-securi
 springBootWeb = { module = 'org.springframework.boot:spring-boot-starter-web', version.ref = "springBoot" }
 springBootActuator = { module = 'org.springframework.boot:spring-boot-starter-actuator', version.ref = "springBoot" }
 springBootOAuthServer = { module = 'org.springframework.boot:spring-boot-starter-oauth2-resource-server', version.ref = "springBoot" }
-springDoc = { module = 'org.springdoc:springdoc-openapi-starter-webmvc-ui', version = "3.1.0" }
-jacksonModuleKotlin = { module = 'com.fasterxml.jackson.module:jackson-module-kotlin', version = "2.22.2" }
+springDoc = { module = 'org.springdoc:springdoc-openapi-starter-webmvc-ui', version = "3.1.1" }
+jacksonModuleKotlin = { module = 'com.fasterxml.jackson.module:jackson-module-kotlin', version = "2.22.3" }
 springBootJpa = { module = 'org.springframework.boot:spring-boot-starter-data-jpa', version.ref = "springBoot" }
 postgresql = { module = 'org.postgresql:postgresql', version = "42.7.13" }
 springAiMcpServer = { module = 'org.springframework.ai:spring-ai-starter-mcp-server', version.ref = "springAi" }
@@ -27,8 +27,8 @@ springBootDataJpaTest = { module = 'org.springframework.boot:spring-boot-starter
 springBootSecurityTest = { module = 'org.springframework.boot:spring-boot-starter-security-test', version.ref = "springBoot" }
 mockk = { module = "io.mockk:mockk", version = "1.14.11" }
 springMockk = { module = "com.ninja-squad:springmockk", version = "5.0.1" }
-h2 = { module = 'com.h2database:h2', version = "2.4.240" }
-archunit = { module = "com.tngtech.archunit:archunit", version = "1.5.0" }
+h2 = { module = 'com.h2database:h2', version = "2.5.252" }
+archunit = { module = "com.tngtech.archunit:archunit", version = "1.5.1" }
 
 # Libraries can be bundled together for easier import
 [bundles]
